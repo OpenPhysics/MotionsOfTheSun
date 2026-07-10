@@ -1,0 +1,47 @@
+{
+  "title": "Movimientos del Sol",
+  "screens": {
+    "sunPaths": "Trayectorias del Sol",
+    "siderealSolarTime": "Tiempo sideral y solar",
+    "zodiac": "Zodíaco"
+  },
+  "a11y": {
+    "sunPaths": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra un diagrama del horizonte con la trayectoria diaria del Sol por el cielo para una latitud y fecha elegidas.",
+        "controlArea": "El área de control tiene un botón Restablecer todo que devuelve la pantalla a su estado inicial.",
+        "interactionHint": "Explora la pantalla interactuando con sus controles."
+      },
+      "currentDetails": "La pantalla está en su estado inicial.",
+      "controls": {
+        "exampleControl": "Control de ejemplo"
+      }
+    },
+    "siderealSolarTime": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra la Tierra rotando y orbitando el Sol, comparando el día sideral con el día solar.",
+        "controlArea": "El área de control tiene un botón Restablecer todo que devuelve la pantalla a su estado inicial.",
+        "interactionHint": "Explora la pantalla interactuando con sus controles."
+      },
+      "currentDetails": "La pantalla está en su estado inicial.",
+      "controls": {
+        "exampleControl": "Control de ejemplo"
+      }
+    },
+    "zodiac": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra el movimiento anual del Sol a lo largo de la eclíptica por las constelaciones del zodíaco.",
+        "controlArea": "El área de control tiene un botón Restablecer todo que devuelve la pantalla a su estado inicial.",
+        "interactionHint": "Explora la pantalla interactuando con sus controles."
+      },
+      "currentDetails": "La pantalla está en su estado inicial.",
+      "controls": {
+        "exampleControl": "Control de ejemplo"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulación",
+    "exampleToggle": "Ejemplo de alternancia"
+  }
+}

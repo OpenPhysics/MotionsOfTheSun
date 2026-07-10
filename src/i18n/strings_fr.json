@@ -1,0 +1,47 @@
+{
+  "title": "Mouvements du Soleil",
+  "screens": {
+    "sunPaths": "Trajectoires du Soleil",
+    "siderealSolarTime": "Temps sidéral et solaire",
+    "zodiac": "Zodiaque"
+  },
+  "a11y": {
+    "sunPaths": {
+      "screenSummary": {
+        "playArea": "La zone de jeu affiche un diagramme d'horizon avec la trajectoire quotidienne du Soleil dans le ciel pour une latitude et une date choisies.",
+        "controlArea": "La zone de contrôle comporte un bouton Tout réinitialiser qui ramène l'écran à son état initial.",
+        "interactionHint": "Explorez l'écran en interagissant avec ses commandes."
+      },
+      "currentDetails": "L'écran est dans son état initial.",
+      "controls": {
+        "exampleControl": "Contrôle d'exemple"
+      }
+    },
+    "siderealSolarTime": {
+      "screenSummary": {
+        "playArea": "La zone de jeu montre la Terre en rotation et en orbite autour du Soleil, comparant le jour sidéral au jour solaire.",
+        "controlArea": "La zone de contrôle comporte un bouton Tout réinitialiser qui ramène l'écran à son état initial.",
+        "interactionHint": "Explorez l'écran en interagissant avec ses commandes."
+      },
+      "currentDetails": "L'écran est dans son état initial.",
+      "controls": {
+        "exampleControl": "Contrôle d'exemple"
+      }
+    },
+    "zodiac": {
+      "screenSummary": {
+        "playArea": "La zone de jeu montre le mouvement annuel du Soleil le long de l'écliptique à travers les constellations du zodiaque.",
+        "controlArea": "La zone de contrôle comporte un bouton Tout réinitialiser qui ramène l'écran à son état initial.",
+        "interactionHint": "Explorez l'écran en interagissant avec ses commandes."
+      },
+      "currentDetails": "L'écran est dans son état initial.",
+      "controls": {
+        "exampleControl": "Contrôle d'exemple"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulation",
+    "exampleToggle": "Exemple de bascule"
+  }
+}

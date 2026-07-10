@@ -1,0 +1,47 @@
+{
+  "title": "Motions of the Sun",
+  "screens": {
+    "sunPaths": "Sun Paths",
+    "siderealSolarTime": "Sidereal and Solar Time",
+    "zodiac": "Zodiac"
+  },
+  "a11y": {
+    "sunPaths": {
+      "screenSummary": {
+        "playArea": "The play area shows a horizon diagram with the Sun's daily path across the sky for a chosen latitude and date.",
+        "controlArea": "The control area has a Reset All button that returns the screen to its starting state.",
+        "interactionHint": "Explore the screen by interacting with its controls."
+      },
+      "currentDetails": "The screen is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
+    },
+    "siderealSolarTime": {
+      "screenSummary": {
+        "playArea": "The play area shows Earth rotating and orbiting the Sun, comparing the sidereal day with the solar day.",
+        "controlArea": "The control area has a Reset All button that returns the screen to its starting state.",
+        "interactionHint": "Explore the screen by interacting with its controls."
+      },
+      "currentDetails": "The screen is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
+    },
+    "zodiac": {
+      "screenSummary": {
+        "playArea": "The play area shows the Sun's yearly motion along the ecliptic through the zodiac constellations.",
+        "controlArea": "The control area has a Reset All button that returns the screen to its starting state.",
+        "interactionHint": "Explore the screen by interacting with its controls."
+      },
+      "currentDetails": "The screen is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
+    }
+  },
+  "preferences": {
+    "title": "Simulation",
+    "exampleToggle": "Example Toggle"
+  }
+}
