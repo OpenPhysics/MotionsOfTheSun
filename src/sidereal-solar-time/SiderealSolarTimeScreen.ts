@@ -12,6 +12,7 @@ import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import { createSiderealSolarTimeIcon } from "../common/MotionsOfTheSunScreenIcons.js";
 import MotionsOfTheSunColors from "../MotionsOfTheSunColors.js";
 import { SiderealSolarTimeModel } from "./model/SiderealSolarTimeModel.js";
 import { SiderealSolarTimeKeyboardHelpContent } from "./view/SiderealSolarTimeKeyboardHelpContent.js";
@@ -34,6 +35,8 @@ export class SiderealSolarTimeScreen extends Screen<SiderealSolarTimeModel, Side
         {
           backgroundColorProperty: MotionsOfTheSunColors.backgroundColorProperty,
           createKeyboardHelpNode: () => new SiderealSolarTimeKeyboardHelpContent(),
+          homeScreenIcon: createSiderealSolarTimeIcon(),
+          navigationBarIcon: createSiderealSolarTimeIcon(),
         },
         options,
       ),

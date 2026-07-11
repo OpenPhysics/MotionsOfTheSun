@@ -1,38 +1,75 @@
 /**
  * ZodiacScreenSummaryContent.ts
  *
- * The accessible screen summary read by screen readers (SceneryStack's
- * Interactive Description). It appears at the top of the parallel DOM and gives
- * a non-visual user a way to orient themselves and to re-read the simulation's
- * current state at any time.
+ * Accessible screen summary for the Zodiac screen (Screen 3).
  *
- * A summary has four regions (all optional, but provide at least the first
- * three in every sim for consistency across OpenPhysics):
- *   - playAreaContent       — what the play area contains
- *   - controlAreaContent    — what the controls do
- *   - currentDetailsContent — a LIVE paragraph describing current state
- *   - interactionHintContent — a short hint on how to get started
+ * `currentDetailsContent` is a live `PatternStringProperty` that fills the
+ * localized pattern from `a11y.zodiac.currentDetails`:
+ *   "The Sun is in {{sign}} on {{month}} {{day}}. It is {{clockTime}} local solar time."
  *
- * ── Making "current details" live ─────────────────────────────────────────────
- * The template has no model state, so currentDetails is a static string. In a
- * real sim, build a DerivedProperty over the relevant model Properties and pass
- * it as `currentDetailsContent` so the paragraph updates as the sim runs.
- * See LunarLander/src/.../LunarLanderScreenSummaryContent.ts for the pattern.
+ * All tokens are updated whenever the model state changes so that a screen-
+ * reader user always hears the current date and solar time.
  */
+
+import type { TReadOnlyProperty } from "scenerystack/axon";
+import { DerivedProperty, PatternStringProperty } from "scenerystack/axon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ZodiacModel } from "../model/ZodiacModel.js";
+import { MONTH_NAMES, SIGN_KEYS } from "../model/ZodiacModel.js";
 
 export class ZodiacScreenSummaryContent extends ScreenSummaryContent {
-  // `model` is unused in the template but kept in the signature so real sims can
-  // derive a live currentDetailsContent from it without changing call sites.
-  public constructor(_model: ZodiacModel) {
+  public constructor(model: ZodiacModel) {
     const a11y = StringManager.getInstance().getZodiacA11yStrings();
+    const zodiacStrings = StringManager.getInstance().getZodiacStrings();
+    const controlStrings = StringManager.getInstance().getControls();
+
+    // ── Live sign string ──────────────────────────────────────────────────
+    // Read zodiac sign name string properties once (not reactive to language change; acceptable)
+    const signValueProperties: TReadOnlyProperty<string>[] = SIGN_KEYS.map(
+      (key) =>
+        (zodiacStrings as Record<string, TReadOnlyProperty<string>>)[`${key}StringProperty`] ??
+        ({ value: key } as TReadOnlyProperty<string>),
+    );
+
+    const signStringProperty = new DerivedProperty([model.sunSignIndexProperty], (idx) => {
+      return signValueProperties[idx]?.value ?? SIGN_KEYS[idx] ?? "";
+    });
+
+    // ── Live month name string ────────────────────────────────────────────
+    const monthNameProperties: TReadOnlyProperty<string>[] = [
+      controlStrings.months.januaryStringProperty,
+      controlStrings.months.februaryStringProperty,
+      controlStrings.months.marchStringProperty,
+      controlStrings.months.aprilStringProperty,
+      controlStrings.months.mayStringProperty,
+      controlStrings.months.juneStringProperty,
+      controlStrings.months.julyStringProperty,
+      controlStrings.months.augustStringProperty,
+      controlStrings.months.septemberStringProperty,
+      controlStrings.months.octoberStringProperty,
+      controlStrings.months.novemberStringProperty,
+      controlStrings.months.decemberStringProperty,
+    ];
+
+    const monthStringProperty = new DerivedProperty([model.monthDayProperty], ({ monthIndex }) => {
+      return monthNameProperties[monthIndex]?.value ?? MONTH_NAMES[monthIndex] ?? "";
+    });
+
+    const dayNumberProperty = new DerivedProperty([model.monthDayProperty], ({ day }) => day);
+
+    // ── Live PatternStringProperty ────────────────────────────────────────
+    const currentDetails = new PatternStringProperty(a11y.currentDetailsStringProperty, {
+      sign: signStringProperty,
+      month: monthStringProperty,
+      day: dayNumberProperty,
+      clockTime: model.solarClockStringProperty,
+    });
 
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
-      currentDetailsContent: a11y.currentDetailsStringProperty,
+      currentDetailsContent: currentDetails,
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });
   }

@@ -3,14 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "A SceneryStack single-screen simulation template.",
+  "description": "A three-screen SceneryStack simulation porting the NAAP Motions of the Sun lab (Sun Paths, Sidereal & Solar Time, Zodiac).",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OpenPhysics/TemplateSingleSim.git"
+    "url": "https://github.com/OpenPhysics/MotionsOfTheSun.git"
   },
   "keywords": [
-    "template",
+    "astronomy",
+    "sun",
     "simulation",
     "SceneryStack",
     "interactive",

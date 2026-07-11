@@ -12,6 +12,7 @@ import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import { createZodiacIcon } from "../common/MotionsOfTheSunScreenIcons.js";
 import MotionsOfTheSunColors from "../MotionsOfTheSunColors.js";
 import { ZodiacModel } from "./model/ZodiacModel.js";
 import { ZodiacKeyboardHelpContent } from "./view/ZodiacKeyboardHelpContent.js";
@@ -34,6 +35,8 @@ export class ZodiacScreen extends Screen<ZodiacModel, ZodiacScreenView> {
         {
           backgroundColorProperty: MotionsOfTheSunColors.backgroundColorProperty,
           createKeyboardHelpNode: () => new ZodiacKeyboardHelpContent(),
+          homeScreenIcon: createZodiacIcon(),
+          navigationBarIcon: createZodiacIcon(),
         },
         options,
       ),

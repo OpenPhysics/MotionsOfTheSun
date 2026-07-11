@@ -11,21 +11,34 @@
  * 2. If it should also be user-editable at runtime, surface it as a preference
  *    in MotionsOfTheSunPreferencesModel (initialize that Property from this query parameter).
  *
- * Usage: append e.g. `?exampleToggle=true` to the sim URL.
+ * Usage: append e.g. `?latitude=60&day=355` to the sim URL.
  */
 
 import { logGlobal } from "scenerystack/phet-core";
 import { QueryStringMachine } from "scenerystack/query-string-machine";
+import { DEFAULT_DAY_OF_YEAR, DEFAULT_LATITUDE } from "../MotionsOfTheSunConstants.js";
 import MotionsOfTheSunNamespace from "../MotionsOfTheSunNamespace.js";
 
 const motionsOfTheSunQueryParameters = QueryStringMachine.getAll({
   /**
-   * Example public boolean parameter. Replace with real sim-specific parameters,
-   * or remove if the sim has none.
+   * Default observer latitude in degrees (+N / −S). Seeds the Preferences value
+   * and the Sun Paths screen's initial latitude. Example: `?latitude=-33.9`.
    */
-  exampleToggle: {
-    type: "boolean",
-    defaultValue: false,
+  latitude: {
+    type: "number",
+    defaultValue: DEFAULT_LATITUDE,
+    isValidValue: (value: number) => value >= -90 && value <= 90,
+    public: true,
+  },
+
+  /**
+   * Starting day of year for the Sun Paths screen (1 = Jan 1, 365 = Dec 31).
+   * Example: `?day=355` starts near the December solstice.
+   */
+  day: {
+    type: "number",
+    defaultValue: DEFAULT_DAY_OF_YEAR,
+    isValidValue: (value: number) => value >= 0 && value <= 366,
     public: true,
   },
 });

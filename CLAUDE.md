@@ -8,6 +8,11 @@ A three-screen SceneryStack simulation porting the NAAP **Motions of the Sun** l
 (astroUNL `naap/motion3`), scaffolded from `TemplateSingleSim`. **Currently a framework
 scaffold** — placeholder label + Reset All per screen; no models/physics yet.
 
+**The approved, step-by-step porting plan is `doc/porting-plan.md`.** Before implementing
+anything, read it and execute the next incomplete step exactly as written (phases 0–8,
+each step names its input/output files, formulas, and gate). Do not re-derive decisions
+D1–D9 recorded there.
+
 - **Sun Paths** (`src/sun-paths/`) — port of the NAAP *Motions of the Sun* simulator
   (`sunmotions.swf`): a horizon diagram with the Sun's daily path for a chosen latitude and
   date, with time animation.

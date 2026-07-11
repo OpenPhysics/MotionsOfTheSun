@@ -1,0 +1,26 @@
+/**
+ * skyViewLayout.ts
+ *
+ * Shared layout helpers for positioning readouts and labels relative to a
+ * {@link SkyProjection}.
+ */
+
+import type { Node } from "scenerystack/scenery";
+import { VIEW_READOUT_GAP } from "../../MotionsOfTheSunConstants.js";
+import type { SkyProjection } from "../SkyProjection.js";
+
+/** Places a readout directly below a projected sky sphere, centered on it. */
+export const positionReadoutBelowProjection = (readout: Node, projection: SkyProjection): void => {
+  readout.centerX = projection.center.x;
+  readout.top = projection.center.y + projection.radius + VIEW_READOUT_GAP;
+};
+
+/** Places a readout below a projected sky sphere, shifted toward its right side. */
+export const positionReadoutBelowRightOfProjection = (
+  readout: Node,
+  projection: SkyProjection,
+  offsetFromCenter = 48,
+): void => {
+  readout.left = projection.center.x + offsetFromCenter;
+  readout.top = projection.center.y + projection.radius + VIEW_READOUT_GAP;
+};

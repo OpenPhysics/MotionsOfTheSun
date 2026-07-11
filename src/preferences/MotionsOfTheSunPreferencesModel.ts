@@ -2,31 +2,30 @@
  * MotionsOfTheSunPreferencesModel.ts
  *
  * Model for the simulation-specific preferences shown in Preferences →
- * Simulation. Each preference Property takes its initial value from the
- * corresponding query parameter in motionsOfTheSunQueryParameters.
- *
- * Remove the example preference (and its query parameter / UI control) if the
- * sim has no sim-specific preferences.
+ * Simulation. The default observer latitude takes its initial value from the
+ * `latitude` query parameter; the Sun Paths screen seeds (and, on Reset All,
+ * restores) its latitude from this Property.
  */
 
-import { BooleanProperty } from "scenerystack/axon";
+import { NumberProperty } from "scenerystack/axon";
 import type { Tandem } from "scenerystack/tandem";
+import { LATITUDE_RANGE } from "../MotionsOfTheSunConstants.js";
 import MotionsOfTheSunNamespace from "../MotionsOfTheSunNamespace.js";
 import motionsOfTheSunQueryParameters from "./motionsOfTheSunQueryParameters.js";
 
 export class MotionsOfTheSunPreferencesModel {
-  /** Example preference; initial value comes from the `exampleToggle` query parameter. */
-  public readonly exampleToggleProperty: BooleanProperty;
+  /** Default observer latitude (deg); initial value from the `latitude` query parameter. */
+  public readonly defaultLatitudeProperty: NumberProperty;
 
   public constructor(tandem?: Tandem) {
-    this.exampleToggleProperty = new BooleanProperty(
-      motionsOfTheSunQueryParameters.exampleToggle,
-      tandem ? { tandem: tandem.createTandem("exampleToggleProperty") } : undefined,
-    );
+    this.defaultLatitudeProperty = new NumberProperty(motionsOfTheSunQueryParameters.latitude, {
+      range: LATITUDE_RANGE,
+      ...(tandem && { tandem: tandem.createTandem("defaultLatitudeProperty") }),
+    });
   }
 
   public reset(): void {
-    this.exampleToggleProperty.reset();
+    this.defaultLatitudeProperty.reset();
   }
 }
 

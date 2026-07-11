@@ -1,0 +1,103 @@
+# Feature-parity report — Motions of the Sun
+
+Companion to [model.md](./model.md) and [implementation-notes.md](./implementation-notes.md).
+
+This document compares the SceneryStack port (`src/`) against its original NAAP sources,
+screen by screen, and records which original features are present, which the port adds on
+top, and the few genuine gaps.
+
+## Reference sources
+| Screen | Flash original (decompiled) | AS3 source | JS reference |
+|---|---|---|---|
+| Sun Paths | `NAAP/decompiled/sunMotions068-C` | — | `NAAP/astro-simulations/sun-motion-simulator` (React/WebGL) |
+| Sidereal & Solar Time | `NAAP/decompiled/siderealSolarTime` | `NAAP/flash-animations/flashdev2/siderealSolarTime` | *(none — Flash only)* |
+| Zodiac | `NAAP/decompiled/zodiac017` | `NAAP/flash-animations/flashdev2/zodiacSimulator` | *(none — Flash only)* |
+
+Only Sun Paths has a modern JS reimplementation; it mirrors the Flash lab ~1:1 (the Flash
+Info panel additionally shows **hour angle**). Sidereal and Zodiac parity is judged against
+the ActionScript.
+
+**Verdict: the port is at feature parity on all three screens** for the Flash lab behaviours
+that matter pedagogically. Remaining differences are intentional simplifications (zodiac017
+earth-centered view is a top-down diagram, not a full celestial sphere) or SceneryStack
+control idioms.
+
+---
+
+## Screen 1 — Sun Paths
+
+| Original feature (Flash `sunMotions068` / JS) | Port | Location |
+|---|---|---|
+| Display: sun's declination circle, ecliptic, month labels, underside of sphere, stickfigure + shadow, analemma | ✅ 6 checkboxes | `SunPathsControlPanel`, `SunDeclinationCircleNode`, `EclipticOnHorizonNode`, `HorizonDomeNode`, `ObserverFigureNode`, `AnalemmaNode` |
+| Latitude: numeric input + hemisphere + draggable map; default 40.8° | ✅ NumberControl + `WorldMapNode` | `SunPathsControlPanel`, `WorldMapNode` |
+| Date: month/day + draggable year strip | ✅ NumberControl + `CalendarStripNode` (localized month abbrevs) | `SunPathsControlPanel`, `CalendarStripNode` |
+| Time of day: inputs + 24 h analog clock (hour + minute hands, midnight day-wrap) | ✅ NumberControl + `SunClockNode` | `SunPathsControlPanel`, `SunClockNode` |
+| Info readouts: altitude, azimuth, RA, declination, hour angle, sidereal time, equation of time | ✅ all 7 | `SunReadoutPanel` |
+| 3D horizon/celestial sphere, rotatable by drag | ✅ horizon dome + camera drag/keys (D5) | `SunPathsSkyNode`, `attachSkyCameraInteraction` |
+| Draggable Sun disk | ✅ | `SunNode` |
+| Sun-drag mode: time-of-day / day-of-year (along analemma) | ✅ radio + `findClosestAnalemmaDay` | `SunPathsModel.sunDragModeProperty`, `SunNode`, `SunPathsControlPanel` |
+| Animate start/stop + speed | ✅ play/pause/step + SLOW/NORMAL/FAST | `TimeControlNode` |
+| Loop-day | ✅ (disabled in step-by-day mode) | `SunPathsControlPanel` |
+| Animation mode: Continuous / Step by day | ✅ | `SunPathsModel.step()`, `SunPathsControlPanel` |
+| Circle hover balloons (0ʰ, equator, ecliptic, declination, analemma) | ✅ | `CircleHoverBalloonNode`, `SunPathsSkyNode` |
+| Low-animation-quality checkbox | N/A — Flash rendering perf hack, irrelevant to SceneryStack | — |
+
+**Port adds:** color/projector profiles, PWA, i18n, full keyboard nav + screen-reader summaries,
+`?latitude` / `?day` query params.
+
+---
+
+## Screen 2 — Sidereal & Solar Time
+
+| Original feature (Flash `siderealSolarTime`) | Port | Location |
+|---|---|---|
+| Orbit view: Sun at center, Earth globe travelling the orbit | ✅ | `OrbitViewNode` |
+| Draggable Earth globe (change date; Shift = sidereal days) | ✅ + arrow keys | `OrbitViewNode` |
+| Draggable observer figure (change time of day) | ✅ | `OrbitViewNode` |
+| Season ticks + labels (VE / SS / AE / WS) | ✅ | `OrbitViewNode` |
+| Two analog clocks (solar w/ AM·PM, sidereal) w/ draggable hands | ✅ (dark ink on light face) | `AnalogClockNode` ×2 |
+| Day-of-year slider | ✅ | `SiderealSolarTimeScreenView` |
+| Readouts: solar & sidereal days since vernal equinox | ✅ | `TimeJumpPanel` |
+| Jump buttons: ±1/±10 solar days, ±1/±10 sidereal days | ✅ (8) | `TimeJumpPanel` |
+| Time-of-day jumps: midnight / sunrise / noon / sunset | ✅ (4) w/ active highlight | `TimeJumpPanel` |
+| Sidereal jumps: 0h / 6h / 12h / 18h | ✅ (4) w/ active highlight | `TimeJumpPanel` |
+| Season jumps: vernal equinox / summer solstice / autumnal equinox / winter solstice | ✅ (4) w/ active highlight | `TimeJumpPanel` |
+| Eased (cubic) jump animation | ✅ (D4) | `TimeMaster` |
+| SIMPLE (365 d) / JULIAN (365.25 d) year mode | ✅ radio; day slider hides in JULIAN | `SiderealSolarTimeScreenView` |
+
+**Port adds:** continuous play/pause + speed (the Flash only animates discrete jumps),
+color/projector profiles, PWA, i18n, full keyboard nav + screen-reader summaries.
+
+---
+
+## Screen 3 — Zodiac
+
+| Original feature (`zodiacSimulator` AS3 / `zodiac017`) | Port | Location |
+|---|---|---|
+| Lambert azimuthal equal-area sky view at fixed 41° N looking south | ✅ | `ZodiacSkyNode`, `lambertProjection` |
+| Sky/ground gradient + twilight shading by Sun altitude | ✅ | `ZodiacSkyNode` |
+| Alt/az grid, celestial equator, ecliptic curves | ✅ | `ZodiacSkyNode` |
+| 12 zodiac constellations (stick figures + labels) | ✅ | `ZodiacConstellationsNode`, `ZodiacConstellationsData` |
+| Label toggles (constellation / ecliptic / equator) — Flash has these too | ✅ | `ZodiacScreenView` |
+| Sun disc on the ecliptic | ✅ | `ZodiacSkyNode` |
+| Time buttons: −2h/+2h, −6h/+6h, −1 month/+1 month | ✅ (6) | `ZodiacScreenView` |
+| Day-of-year slider + month-day readout | ✅ | `ZodiacScreenView` |
+| Earth-centered (zodiac017) mode | ✅ simplified top-down diagram | `EarthCenteredZodiacNode` |
+
+**Port adds:** the **zodiac sun-strip** panorama (D8), continuous play/pause, color/projector
+profiles, PWA, i18n, screen-reader summaries.
+
+---
+
+## Remaining intentional differences
+1. **Earth-centered Zodiac** is a top-down ecliptic diagram, not the full 3D celestial-sphere
+   renderer from `zodiac017` (documented in `implementation-notes.md`).
+2. **Latitude N/S hemisphere click** — port uses a signed NumberControl (−90…90) instead of
+   absolute degrees + N/S toggle; the world map covers the same interaction.
+3. **SceneryStack control chrome** — NumberControl / RectangularRadioButtonGroup instead of
+   Flash Component UI widgets.
+
+## Contrast note (default / projector profiles)
+Light control surfaces (clock faces, calendar strip) always use dark ink
+(`clockInkColorProperty` / `controlSurfaceTextColorProperty`) so marks stay readable in
+default (dark) mode. Do not paint those marks with `textColorProperty` (near-white in default).

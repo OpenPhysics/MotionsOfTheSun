@@ -2,15 +2,24 @@
  * ZodiacKeyboardHelpContent.ts
  *
  * Content for the keyboard-help dialog (the "?" button in the navigation bar).
- * The template's only interactions are buttons and Reset All, so a single
- * basic-actions section covers the available keyboard controls. Add a slider or
- * combo-box section here as the simulation grows.
+ *
+ * Two columns:
+ *  - Left:  SliderControlsKeyboardHelpSection (day-of-year slider)
+ *  - Right: TimeControlsKeyboardHelpSection (play/pause/step) + BasicActionsKeyboardHelpSection
  */
 
-import { BasicActionsKeyboardHelpSection, TwoColumnKeyboardHelpContent } from "scenerystack/scenery-phet";
+import {
+  BasicActionsKeyboardHelpSection,
+  SliderControlsKeyboardHelpSection,
+  TimeControlsKeyboardHelpSection,
+  TwoColumnKeyboardHelpContent,
+} from "scenerystack/scenery-phet";
 
 export class ZodiacKeyboardHelpContent extends TwoColumnKeyboardHelpContent {
   public constructor() {
-    super([new BasicActionsKeyboardHelpSection()], []);
+    const sliderSection = new SliderControlsKeyboardHelpSection();
+    const timeControlsSection = new TimeControlsKeyboardHelpSection();
+    const basicSection = new BasicActionsKeyboardHelpSection();
+    super([sliderSection], [timeControlsSection, basicSection]);
   }
 }

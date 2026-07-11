@@ -7,7 +7,7 @@
  */
 
 import type { PlayPauseStepButtonGroupOptions, TimeControlNodeOptions } from "scenerystack/scenery-phet";
-import { ButtonNode, type ComboBoxOptions } from "scenerystack/sun";
+import { ButtonNode, type ComboBoxOptions, RectangularRadioButton } from "scenerystack/sun";
 import MotionsOfTheSunColors from "../MotionsOfTheSunColors.js";
 
 export const FLAT_BUTTON_APPEARANCE_OPTIONS = {
@@ -30,6 +30,15 @@ export const SIM_COMBO_BOX_OPTIONS = {
 
 /** Options for RectangularPushButton and NumberControl arrow buttons. */
 export const FLAT_RECTANGULAR_BUTTON_OPTIONS = FLAT_BUTTON_APPEARANCE_OPTIONS;
+
+/**
+ * Options for RectangularRadioButton / RectangularRadioButtonGroup.radioButtonOptions.
+ * Do not reuse {@link FLAT_RECTANGULAR_BUTTON_OPTIONS}: ButtonNode.FlatAppearanceStrategy
+ * throws on RadioButtonInteractionState.SELECTED / DESELECTED.
+ */
+export const FLAT_RECTANGULAR_RADIO_BUTTON_OPTIONS = {
+  buttonAppearanceStrategy: RectangularRadioButton.FlatAppearanceStrategy,
+} as const;
 
 /** Options for ResetAllButton (extends RoundPushButton). */
 export const FLAT_RESET_ALL_BUTTON_OPTIONS = FLAT_BUTTON_APPEARANCE_OPTIONS;

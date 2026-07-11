@@ -1,43 +1,95 @@
 /**
  * SiderealSolarTimeModel.ts
  *
- * The top-level model for the simulation screen.
+ * Top-level model for the Sidereal & Solar Time screen (Screen 2).
  *
- * Add your simulation's state here using reactive Property objects from
- * scenerystack/axon. The view observes these properties and updates automatically.
+ * Composes:
+ *  - `timeMaster` — manages solar/sidereal time with eased jumps (TimeMaster)
+ *  - `timer`      — play/pause + elapsed time (TimeModel)
+ *  - `timeSpeedProperty` — SLOW / NORMAL / FAST multiplier
  *
- * ── Example ──────────────────────────────────────────────────────────────────
- *   import { BooleanProperty, NumberProperty } from "scenerystack/axon";
+ * Continuous play advances solarTime at `SOLAR_DAYS_PER_SECOND × multiplier`
+ * solar days per real second.  Starting an eased jump (duration > 0) pauses
+ * the timer automatically.
  *
- *   public readonly isRunningProperty = new BooleanProperty(false);
- *   public readonly timeProperty = new NumberProperty(0);    // seconds
- *
- * ── Step cycle ────────────────────────────────────────────────────────────────
- * The Sim calls step(dt) on every animation frame. Advance your model state
- * in that method (e.g. integrate equations, update positions).
- *
- * ── Reset ─────────────────────────────────────────────────────────────────────
- * reset() is called when the user presses Reset All. Call .reset() on every
- * Property declared here.
+ * The SIMPLE (365 d) / JULIAN (365.25 d) year mode is exposed via a radio group
+ * in the view, bound directly to `timeMaster.modeProperty` (updates D7).
  */
+
+import { EnumerationProperty } from "scenerystack/axon";
 import type { TModel } from "scenerystack/joist";
+import { TimeSpeed } from "scenerystack/scenery-phet";
+import { TimeMaster } from "../../common/model/TimeMaster.js";
+import { TimeModel } from "../../common/TimeModel.js";
+import { SOLAR_DAYS_PER_SECOND } from "../../MotionsOfTheSunConstants.js";
+import MotionsOfTheSunNamespace from "../../MotionsOfTheSunNamespace.js";
+
+/** Maps TimeSpeed enum values to a real-seconds multiplier. */
+function getSpeedMultiplier(speed: TimeSpeed): number {
+  if (speed === TimeSpeed.SLOW) {
+    return 0.25;
+  }
+  if (speed === TimeSpeed.FAST) {
+    return 4;
+  }
+  return 1; // NORMAL
+}
 
 export class SiderealSolarTimeModel implements TModel {
+  /** Manages solar/sidereal time, eased jumps, and isAt* derived properties. */
+  public readonly timeMaster: TimeMaster;
+
+  /** Play/pause + elapsed time; bind to TimeControlNode. */
+  public readonly timer: TimeModel;
+
+  /** Playback speed; SLOW = 0.25×, NORMAL = 1×, FAST = 4×. */
+  public readonly timeSpeedProperty: EnumerationProperty<TimeSpeed>;
+
+  public constructor() {
+    this.timeMaster = new TimeMaster();
+    this.timer = new TimeModel(false); // starts paused
+    this.timeSpeedProperty = new EnumerationProperty(TimeSpeed.NORMAL);
+
+    // When an eased jump starts, pause continuous playback so the two
+    // advancement paths do not fight each other.
+    this.timeMaster.isAnimatingProperty.lazyLink((isAnimating) => {
+      if (isAnimating) {
+        this.timer.isPlayingProperty.value = false;
+      }
+    });
+  }
+
   /**
-   * Resets all model state to initial values.
-   * Called when the user presses the Reset All button.
+   * Advance the simulation by one solar hour (1/24 day) as an instant jump.
+   * Bound to the TimeControlNode's step-forward button.
    */
-  public reset(): void {
-    // TODO: call .reset() on every Property declared in this model
+  public stepForward(): void {
+    this.timeMaster.incrementSolarTime(1 / 24, 0);
   }
 
   /**
    * Steps the model forward by dt seconds.
    * Called every animation frame by the Sim framework.
-   *
-   * @param _dt - elapsed time in seconds since the last frame
    */
-  public step(_dt: number): void {
-    // TODO: advance simulation state here
+  public step(dt: number): void {
+    this.timer.step(dt);
+    this.timeMaster.step(dt);
+
+    if (this.timer.isPlayingProperty.value && !this.timeMaster.isAnimatingProperty.value) {
+      const multiplier = getSpeedMultiplier(this.timeSpeedProperty.value);
+      this.timeMaster.incrementSolarTime(dt * SOLAR_DAYS_PER_SECOND * multiplier);
+    }
+  }
+
+  /**
+   * Resets all model state to initial values.
+   * Called when the user presses the Reset All button.
+   */
+  public reset(): void {
+    this.timeMaster.reset();
+    this.timer.reset();
+    this.timeSpeedProperty.reset();
   }
 }
+
+MotionsOfTheSunNamespace.register("SiderealSolarTimeModel", SiderealSolarTimeModel);

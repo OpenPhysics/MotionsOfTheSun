@@ -25,12 +25,16 @@ import stringsEn from "./strings_en.json";
 import stringsEs from "./strings_es.json";
 import stringsFr from "./strings_fr.json";
 
-// ── Compile-time key-parity check ─────────────────────────────────────────────
-// TypeScript errors here if any locale file is missing a key from English.
+// ── Compile-time key-parity checks ────────────────────────────────────────────
+// TypeScript errors here if any locale file is missing a key from another.
 // biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
 void (stringsEn satisfies typeof stringsFr);
 // biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
 void (stringsFr satisfies typeof stringsEn);
+// biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
+void (stringsEn satisfies typeof stringsEs);
+// biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
+void (stringsEs satisfies typeof stringsEn);
 
 // ── Build the reactive string property tree ───────────────────────────────────
 const stringProperties = LocalizedString.getNestedStringProperties({
@@ -89,8 +93,6 @@ export class StringManager {
    *   - `screenSummary.*` — play-area / control-area overview and an interaction
    *     hint, read by each screen's `*ScreenSummaryContent`.
    *   - `currentDetails` — a paragraph describing the simulation's current state.
-   *     In a real sim, derive a live version from model Properties (see
-   *     LunarLander's ScreenSummaryContent for the canonical pattern).
    *
    * Add `accessibleName` / `accessibleHelpText` strings for individual controls
    * to the `a11y` group too, then read them through this same nested tree.
@@ -105,6 +107,58 @@ export class StringManager {
 
   public getZodiacA11yStrings() {
     return stringProperties.a11y.zodiac;
+  }
+
+  /**
+   * Visible string properties for the Sun Paths screen (Screen 1):
+   * display-toggle labels, readout headings, and accessibility names for
+   * every interactive node on the screen. All update when the locale changes.
+   */
+  public getSunPathsStrings() {
+    return stringProperties.sunPaths;
+  }
+
+  /**
+   * Zodiac sign name StringProperties (Aries … Pisces).
+   * Sourced from the `zodiac` top-level group (SSM donor verbatim).
+   */
+  public getZodiacStrings() {
+    return stringProperties.zodiac;
+  }
+
+  /**
+   * Shared control label StringProperties: latitude, dayOfYear, timeOfDay,
+   * and the 12 localized month names.
+   */
+  public getControls() {
+    return stringProperties.controls;
+  }
+
+  /**
+   * Keyboard help StringProperties: sky-rotate arrows, rotate-about-zenith,
+   * advance-sidereal-time, and slider/sky-view summaries.
+   * (Star-specific entries were dropped per D5.)
+   */
+  public getKeyboardHelpStrings() {
+    return stringProperties.keyboardHelp;
+  }
+
+  /**
+   * Visible string properties for the Sidereal & Solar Time screen (Screen 2):
+   * button labels, readout headings, time-of-day and season names, and AM/PM
+   * abbreviations. All update when the locale changes.
+   */
+  public getSiderealSolarTimeStrings() {
+    return stringProperties.siderealSolarTime;
+  }
+
+  /**
+   * Visible string properties for the Zodiac screen (Screen 3):
+   * time-button labels, checkbox labels, direction labels, and the latitude note.
+   * Sign names are in `getZodiacStrings()`.
+   */
+  public getZodiacScreenStrings() {
+    return stringProperties.zodiacScreen;
   }
 
   /**

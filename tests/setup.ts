@@ -156,8 +156,7 @@ HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, cont
 import { init, madeWithSceneryStackSplashDataURI } from "scenerystack/init";
 
 init({
-  // Change to match your package.json "name" when forking the template.
-  name: "simTemplate",
+  name: "motions-of-the-sun",
   version: "1.0.0-test",
   brand: "made-with-scenerystack",
   locale: "en",

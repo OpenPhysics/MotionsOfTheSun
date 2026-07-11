@@ -38,6 +38,7 @@ onReadyToLaunch(() => {
       name: screenNames.sunPathsStringProperty,
       tandem: Tandem.ROOT.createTandem("sunPathsScreen"),
       backgroundColorProperty: MotionsOfTheSunColors.backgroundColorProperty,
+      defaultLatitudeProperty: simPreferences.defaultLatitudeProperty,
     }),
     new SiderealSolarTimeScreen({
       name: screenNames.siderealSolarTimeStringProperty,

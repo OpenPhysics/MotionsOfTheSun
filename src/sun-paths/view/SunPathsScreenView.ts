@@ -1,82 +1,126 @@
 /**
  * SunPathsScreenView.ts
  *
- * The top-level view for the simulation screen.
+ * Top-level view for the Sun Paths screen (Screen 1).
  *
- * All visual nodes are added here. Follow these conventions:
- *   - Use this.layoutBounds for positioning (never magic pixel values)
- *   - Keep a ResetAllButton that calls model.reset() and this.reset()
- *   - Override step(dt) for frame-by-frame animation
- *
- * ── Adding content ────────────────────────────────────────────────────────────
- * 1. Create Node subclasses in separate files (e.g. SunPathsControlPanel.ts)
- * 2. Instantiate them here and call this.addChild(...)
- * 3. Link them to model properties:
- *      model.isRunningProperty.link( isRunning => { ... } );
- *
- * ── Layout bounds ─────────────────────────────────────────────────────────────
- * SceneryStack uses a virtual 1024×618 coordinate space by default.
- * this.layoutBounds gives you the full rectangle; use it for alignment:
- *   center, minX, maxX, minY, maxY, width, height
+ * Layout (1024 × 618 virtual px)
+ * ─────────────────────────────
+ *  Left area   — SunPathsSkyNode (horizon dome + overlays + Sun)
+ *  Right area  — SunPathsControlPanel (latitude, day, time, toggles) and
+ *                SunReadoutPanel (7-row ephemeris readout)
+ *  Bottom-center — TimeControlNode (play/pause/step)
+ *  Bottom-right  — ResetAllButton
  */
 
-import { Node, Rectangle, Text } from "scenerystack/scenery";
-import { ResetAllButton } from "scenerystack/scenery-phet";
+import { Vector2 } from "scenerystack/dot";
+import { Rectangle, VBox } from "scenerystack/scenery";
+import { ResetAllButton, TimeControlNode } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
-import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/MotionsOfTheSunButtonOptions.js";
+import {
+  FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS,
+  FLAT_RESET_ALL_BUTTON_OPTIONS,
+  TIME_CONTROL_SPEED_RADIO_OPTIONS,
+} from "../../common/MotionsOfTheSunButtonOptions.js";
+import { StringManager } from "../../i18n/StringManager.js";
 import MotionsOfTheSunColors from "../../MotionsOfTheSunColors.js";
-import { SCREEN_VIEW_MARGIN } from "../../MotionsOfTheSunConstants.js";
+import {
+  RESET_ALL_BUTTON_BOTTOM_MARGIN,
+  SCREEN_VIEW_MARGIN,
+  SPHERE_RADIUS,
+  VIEW_READOUT_GAP,
+} from "../../MotionsOfTheSunConstants.js";
 import type { SunPathsModel } from "../model/SunPathsModel.js";
+import { SunPathsControlPanel } from "./SunPathsControlPanel.js";
 import { SunPathsScreenSummaryContent } from "./SunPathsScreenSummaryContent.js";
+import { SunPathsSkyNode } from "./SunPathsSkyNode.js";
+import { SunReadoutPanel } from "./SunReadoutPanel.js";
+
+/** Reserve below dome for optional readout. */
+const READOUT_RESERVE = 36 + VIEW_READOUT_GAP;
+
+/** Compute the dome center and effective radius fitting in the available left area. */
+const computeDomeFit = (
+  leftBound: number,
+  rightBound: number,
+  topBound: number,
+  bottomBound: number,
+): { center: Vector2; radius: number } => {
+  const availW = rightBound - leftBound;
+  const availH = bottomBound - topBound;
+  const radius = Math.min(availW / 2, (availH - READOUT_RESERVE) / 2, SPHERE_RADIUS) * 0.96;
+  const centerX = leftBound + availW / 2;
+  const centerY = topBound + radius;
+  return { center: new Vector2(centerX, centerY), radius };
+};
 
 export class SunPathsScreenView extends ScreenView {
+  private readonly skyNode: SunPathsSkyNode;
+
   public constructor(model: SunPathsModel, options?: ScreenViewOptions) {
-    // ── Accessibility: screen summary ───────────────────────────────────────────
-    // The screen summary is the first thing a screen-reader user encounters. It
-    // is registered here, in the ScreenView's super() options, so every sim wires
-    // it the same way. See SunPathsScreenSummaryContent for the four content regions.
     super({
       screenSummaryContent: new SunPathsScreenSummaryContent(model),
       ...options,
     });
 
-    // ── Background ────────────────────────────────────────────────────────────
-    // A full-screen rectangle that follows the active color profile.
-    // Replace or remove once you add real content.
+    // ── Background ─────────────────────────────────────────────────────────────
     const backgroundRect = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
       fill: MotionsOfTheSunColors.backgroundColorProperty,
     });
     this.addChild(backgroundRect);
 
-    // ── Placeholder label ─────────────────────────────────────────────────────
-    // Replace this with your actual simulation content.
-    const placeholderText = new Text("Sun Paths", {
-      font: "bold 36px sans-serif",
-      fill: MotionsOfTheSunColors.textColorProperty,
-      center: this.layoutBounds.center,
+    // ── Control panels (right rail, two columns) ───────────────────────────────
+    // The tall "Time and Location" panel anchors the far-right column; the three
+    // shorter groups ("Animation Controls", "General Settings", "Information")
+    // stack in a second column to its left. This mirrors the NAAP reference
+    // grouping while fitting the right rail's height.
+    const controls = new SunPathsControlPanel(model);
+    const readoutPanel = new SunReadoutPanel(model);
+
+    const timeAndLocationPanel = controls.timeAndLocationPanel;
+    timeAndLocationPanel.right = this.layoutBounds.maxX - SCREEN_VIEW_MARGIN;
+    timeAndLocationPanel.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
+    this.addChild(timeAndLocationPanel);
+
+    const rightStack = new VBox({
+      align: "right",
+      spacing: SCREEN_VIEW_MARGIN,
+      children: [controls.animationControlsPanel, controls.generalSettingsPanel, readoutPanel],
     });
-    this.addChild(placeholderText);
+    rightStack.right = timeAndLocationPanel.left - SCREEN_VIEW_MARGIN;
+    rightStack.top = timeAndLocationPanel.top;
+    this.addChild(rightStack);
 
-    // ── Accessibility: per-control names ────────────────────────────────────────
-    // EVERY interactive node must carry an `accessibleName` (and an
-    // `accessibleHelpText` where useful), sourced from the StringManager `a11y`
-    // string group — never a hard-coded English literal. Sun/scenery-phet controls
-    // (NumberControl, Checkbox, ComboBox, AquaRadioButtonGroup, …) accept it as an
-    // option; a draggable plain Node needs `tagName: "div", focusable: true` too.
-    // Example (uncomment and adapt when you add a real control):
-    //
-    //   const a11y = StringManager.getInstance().getSunPathsA11yStrings();
-    //   const exampleButton = new RectangularPushButton({
-    //     ...FLAT_RECTANGULAR_BUTTON_OPTIONS, // flat appearance, not SceneryStack's default 3-D look
-    //     content: someIcon,
-    //     listener: () => model.doSomething(),
-    //     accessibleName: a11y.controls.exampleControlStringProperty,
-    //   });
-    //   this.addChild(exampleButton);
+    // ── Horizon dome (left of the panels) ─────────────────────────────────────
+    const playRight = rightStack.left - SCREEN_VIEW_MARGIN;
+    const playLeft = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
+    const playTop = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
+    const playBottom = this.layoutBounds.maxY - RESET_ALL_BUTTON_BOTTOM_MARGIN - 60;
 
-    // ── Reset All button ──────────────────────────────────────────────────────
-    // Always position at bottom-right (PhET convention).
+    const { center } = computeDomeFit(playLeft, playRight, playTop, playBottom);
+    this.skyNode = new SunPathsSkyNode(model, center);
+    this.addChild(this.skyNode);
+
+    // ── Time control (bottom-center of play area) ──────────────────────────────
+    const a11y = StringManager.getInstance().getSunPathsA11yStrings();
+    const timeControl = new TimeControlNode(model.timer.isPlayingProperty, {
+      timeSpeedProperty: model.timeSpeedProperty,
+      ...TIME_CONTROL_SPEED_RADIO_OPTIONS,
+      playPauseStepButtonOptions: {
+        ...FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS,
+        stepForwardButtonOptions: {
+          ...FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS.stepForwardButtonOptions,
+          listener: () => model.stepForward(),
+        },
+      },
+      tagName: "div",
+      accessibleName: a11y.controls.timeControlStringProperty,
+    });
+    timeControl.centerX = (playLeft + playRight) / 2;
+    timeControl.bottom = this.layoutBounds.maxY - RESET_ALL_BUTTON_BOTTOM_MARGIN;
+    this.addChild(timeControl);
+
+    // ── Reset All ──────────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
@@ -84,39 +128,27 @@ export class SunPathsScreenView extends ScreenView {
         this.reset();
       },
       right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
+      bottom: this.layoutBounds.maxY - RESET_ALL_BUTTON_BOTTOM_MARGIN,
     });
     this.addChild(resetAllButton);
 
-    // ── Accessibility: keyboard / reading traversal order ───────────────────────
-    // Make the parallel DOM (Tab order and screen-reader reading order)
-    // deterministic and independent of child z-order. ScreenView throws if you
-    // set pdomOrder on itself, so add a lightweight wrapper Node that "borrows"
-    // the interactive nodes in the order a user should reach them — Reset All
-    // last. Non-interactive decoration (background, placeholder) is omitted.
-    this.addChild(
-      new Node({
-        pdomOrder: [
-          // TODO: add the sim's interactive nodes here, in traversal order
-          resetAllButton,
-        ],
-      }),
-    );
+    // ── PDOM order ────────────────────────────────────────────────────────────
+    this.pdomPlayAreaNode.pdomOrder = [this.skyNode.hitRect, this.skyNode.sunNode];
+    this.pdomControlAreaNode.pdomOrder = [
+      timeAndLocationPanel,
+      controls.animationControlsPanel,
+      controls.generalSettingsPanel,
+      readoutPanel,
+      timeControl,
+      resetAllButton,
+    ];
   }
 
-  /**
-   * Resets view-side state (animations, panel visibility, etc.).
-   * Called by the Reset All button listener.
-   */
   public reset(): void {
-    // TODO: reset any view-side state here
+    this.skyNode.reset();
   }
 
-  /**
-   * Steps the view forward by dt seconds for animation.
-   * @param _dt - elapsed time in seconds
-   */
   public override step(_dt: number): void {
-    // TODO: implement animation updates here
+    // Model.step drives property changes; view nodes react via Property / Multilink.
   }
 }
