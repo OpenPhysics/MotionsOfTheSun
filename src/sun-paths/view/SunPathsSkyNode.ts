@@ -1,29 +1,35 @@
 /**
  * SunPathsSkyNode.ts
  *
- * The Sun Paths horizon dome — owns the `SkyProjection` and layers every visual
- * element in the correct depth order:
+ * The Sun Paths celestial sphere — owns the `SkyProjection` and layers every
+ * visual element in Flash CelestialSphere paint order:
  *
  *  1. Transparent hit-rect (camera drag / keyboard target)
- *  2. HorizonGroundNode  — filled ground disk with N/E/S/W labels
- *  3. HorizonDomeNode    — wireframe dome, optional underside
- *  4. CelestialEquatorOnHorizonNode  — the equator great circle
- *  5. HourCircleOnHorizonNode        — the RA = 0h hour circle (rotates with LST)
- *  6. EclipticOnHorizonNode          — ecliptic great circle + optional month labels
- *  7. SunDeclinationCircleNode       — Sun's daily path (small circle at current dec)
- *  8. Analemma / observer / Sun
- *  9. CircleHoverBalloonNode         — Flash-style roll-over labels
+ *  2. SkyBowlShadingNode — altitude-linked day/night bowl
+ *  3. HorizonGroundNode  — filled ground disk with N/E/S/W labels
+ *  4. HorizonShadeNode   — Flash horizonShade darkening
+ *  5. HorizonDomeNode    — wireframe dome, optional underside
+ *  6. CelestialPoleAxisNode — NCP/SCP stubs past the poles
+ *  7. CelestialEquatorOnHorizonNode  — the equator great circle
+ *  8. HourCircleOnHorizonNode        — the RA = 0h hour circle (rotates with LST)
+ *  9. EclipticOnHorizonNode          — ecliptic great circle + optional month labels
+ * 10. SunDeclinationCircleNode       — Sun's daily path (small circle at current dec)
+ * 11. Analemma / observer / Sun
+ * 12. CircleHoverBalloonNode         — Flash-style roll-over labels
  *
- * D5: horizon-frame SkyProjection (identity frame matrix); all overlays convert
- * via `equatorialToHorizonVector`.
+ * Horizon-frame SkyProjection (identity frame matrix); overlays convert via
+ * `equatorialToHorizonVector`. Flash-faithful surfaces (sky/horizon shade +
+ * pole axes) close the former D5 wireframe-only gap without WebGL.
  */
 
 import { BooleanProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import type { Vector2 } from "scenerystack/dot";
 import { Node, Rectangle } from "scenerystack/scenery";
+import { degToRad } from "../../common/SkyCoordinates.js";
 import { SkyProjection } from "../../common/SkyProjection.js";
 import { attachSkyCameraInteraction } from "../../common/view/attachSkyCameraInteraction.js";
 import { CelestialEquatorOnHorizonNode } from "../../common/view/CelestialEquatorOnHorizonNode.js";
+import { CelestialPoleAxisNode } from "../../common/view/CelestialPoleAxisNode.js";
 import { HorizonDomeNode } from "../../common/view/HorizonDomeNode.js";
 import { HorizonGroundNode } from "../../common/view/HorizonGroundNode.js";
 import { HourCircleOnHorizonNode } from "../../common/view/HourCircleOnHorizonNode.js";
@@ -33,17 +39,22 @@ import type { SunPathsModel } from "../model/SunPathsModel.js";
 import { AnalemmaNode } from "./AnalemmaNode.js";
 import { attachCircleHoverBalloon, CircleHoverBalloonNode } from "./CircleHoverBalloonNode.js";
 import { EclipticOnHorizonNode } from "./EclipticOnHorizonNode.js";
+import { HorizonShadeNode } from "./HorizonShadeNode.js";
 import { ObserverFigureNode } from "./ObserverFigureNode.js";
+import { SkyBowlShadingNode } from "./SkyBowlShadingNode.js";
 import { SunDeclinationCircleNode } from "./SunDeclinationCircleNode.js";
 import { SunNode } from "./SunNode.js";
 
-/** Initial camera tilt — slightly down to see the dome from above-outside. */
-const DEFAULT_ELEVATION = -0.4;
+/**
+ * Flash `viewerAltitude = 35` (°). SkyProjection elevation is negative when
+ * looking down onto the sphere, so elevation = −altitude.
+ */
+const DEFAULT_ELEVATION = -degToRad(35);
 
-/** Initial camera spin — face south so the Sun rises on the left. */
-const DEFAULT_AZIMUTH = Math.PI;
+/** Flash `viewerAzimuth = 215` (°) — slightly west of south. */
+const DEFAULT_AZIMUTH = degToRad(215);
 
-/** Equator and 0h circle are always drawn in the Flash lab (no toggle). */
+/** Equator, 0h circle, and pole axes are always drawn in the Flash lab (no toggle). */
 const ALWAYS_VISIBLE = new BooleanProperty(true);
 
 export class SunPathsSkyNode extends Node {
@@ -78,10 +89,13 @@ export class SunPathsSkyNode extends Node {
       { fill: "transparent" },
     );
 
+    const skyBowl = new SkyBowlShadingNode(this.projection, model.sunAltDegProperty, model.showUndersideProperty);
     const groundNode = new HorizonGroundNode(this.projection);
+    const horizonShade = new HorizonShadeNode(this.projection, model.sunAltDegProperty);
     const domeNode = new HorizonDomeNode(this.projection, model.latitudeProperty, {
       undersideVisibleProperty: model.showUndersideProperty,
     });
+    const poleAxes = new CelestialPoleAxisNode(this.projection, model.latitudeProperty, ALWAYS_VISIBLE);
 
     const equatorNode = new CelestialEquatorOnHorizonNode(this.projection, model.latitudeProperty, ALWAYS_VISIBLE);
     const hourCircleNode = new HourCircleOnHorizonNode(
@@ -102,8 +116,11 @@ export class SunPathsSkyNode extends Node {
 
     this.children = [
       this.hitRect,
+      skyBowl,
       groundNode,
+      horizonShade,
       domeNode,
+      poleAxes,
       equatorNode,
       hourCircleNode,
       eclipticNode,

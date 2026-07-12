@@ -32,7 +32,7 @@ additions; SceneryStack control idioms) or small ephemeris indexing offsets on S
 | Date: month/day + draggable year strip | ✅ NumberControl + `CalendarStripNode` (localized month abbrevs) | `SunPathsControlPanel`, `CalendarStripNode` |
 | Time of day: inputs + 24 h analog clock (hour + minute hands, midnight day-wrap) | ✅ NumberControl + `SunClockNode` | `SunPathsControlPanel`, `SunClockNode` |
 | Info readouts: altitude, azimuth, RA, declination, hour angle, sidereal time, equation of time | ✅ all 7 | `SunReadoutPanel` |
-| 3D horizon/celestial sphere, rotatable by drag | ✅ horizon dome + camera drag/keys (D5) | `SunPathsSkyNode`, `attachSkyCameraInteraction` |
+| 3D horizon/celestial sphere, rotatable by drag | ✅ Flash-faithful surfaces on `SkyProjection` (sky/horizon shade, NCP/SCP axes, wireframe) + camera drag/keys | `SunPathsSkyNode`, `SkyBowlShadingNode`, `HorizonShadeNode`, `CelestialPoleAxisNode` |
 | Draggable Sun disk | ✅ | `SunNode` |
 | Sun-drag mode: time-of-day / day-of-year (along analemma) | ✅ radio + `findClosestAnalemmaDay` | `SunPathsModel.sunDragModeProperty`, `SunNode`, `SunPathsControlPanel` |
 | Animate start/stop + speed | ✅ play/pause/step + SLOW/NORMAL/FAST | `TimeControlNode` |
@@ -48,8 +48,9 @@ additions; SceneryStack control idioms) or small ephemeris indexing offsets on S
 Siedell/Flash Fourier coeffs, year wrap `% 365` (`DAY_OF_YEAR_RANGE = [0, 365)`). (CCNMTL's JS
 rewrite used 1-based `Date` DOY; same coeffs with `147.5` would shift RA/dec by ~0.07 h / ~0.16°.)
 
-**Renderer:** Flash 3D `CelestialSphere` (NCP/SCP, altitude-linked sky shading, meridian circles)
-vs port orthographic horizon dome from RotatingSky — intentional (D5).
+**Renderer:** orthographic `SkyProjection` (same software-3D class as Flash) with Flash-faithful
+surfaces — altitude-linked sky bowl + horizon shade (`updateSky`), NCP/SCP axis stubs, wireframe
+meridians/poles. Not a WebGL/Three.js port of CCNMTL `CelestialSphere.jsx`.
 
 ---
 
@@ -104,7 +105,8 @@ color/projector profiles, PWA, i18n, screen-reader summaries.
 
 ## Remaining intentional differences
 1. **Zodiac strip + continuous play** — not in the lab SWFs; pedagogical additions.
-2. **Sun Paths renderer** — Flash 3D `CelestialSphere` vs RotatingSky orthographic horizon dome (D5).
+2. **Sun Paths projection** — Scenery orthographic `SkyProjection` (not Flash mask layers or
+   CCNMTL WebGL); visual surfaces match Flash `CelestialSphere` shading/axes.
 3. **Latitude N/S hemisphere click** (Sun Paths) — port uses a signed NumberControl (−90…90)
    instead of absolute degrees + N/S toggle; the world map covers the same interaction.
 4. **SceneryStack control chrome** — NumberControl / RectangularRadioButtonGroup instead of

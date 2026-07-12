@@ -174,6 +174,30 @@ const MotionsOfTheSunColors = {
 
   // ── Sun Paths specific ────────────────────────────────────────────────────────
 
+  /**
+   * Flash CelestialSphere day-sky bowl fill (`CSGradientDisk` / skyBack color
+   * 12575999 = #BFDFFF). Opacity is modulated by Sun altitude in SkyBowlShadingNode.
+   */
+  skyBowlDayColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "skyBowlDay", {
+    default: "#bfdfff",
+    projector: "#9ec5ef",
+  }),
+
+  /** Night / underside bowl wash when the Sun is down or the far hemisphere is shown. */
+  skyBowlNightColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "skyBowlNight", {
+    default: "#303030",
+    projector: "#6a6a6a",
+  }),
+
+  /**
+   * Flash `horizonShade` dark overlay on the ground disk (alpha from Sun altitude
+   * in HorizonShadeNode; color stays opaque black / soft gray).
+   */
+  horizonShadeColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "horizonShade", {
+    default: "#000000",
+    projector: "#333333",
+  }),
+
   /** The Sun disc. */
   sunColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "sun", {
     default: "#ffd54f",

@@ -46,6 +46,7 @@ All files were copied with global renames:
 | `common/view/skyViewLayout.ts` | `common/view/skyViewLayout.ts` | rename only |
 | `common/view/HorizonDomeNode.ts` | `common/view/HorizonDomeNode.ts` | rename only |
 | `common/view/HorizonGroundNode.ts` | `common/view/HorizonGroundNode.ts` | rename only |
+| `common/view/CelestialPoleAxisNode.ts` | `common/view/CelestialPoleAxisNode.ts` | rename; colors → MotionsOfTheSun; AXIS_EXTENSION 0.2 (Flash 1.2×) |
 | `common/view/CelestialEquatorOnHorizonNode.ts` | `common/view/CelestialEquatorOnHorizonNode.ts` | rename only |
 | `common/view/HourCircleOnHorizonNode.ts` | `common/view/HourCircleOnHorizonNode.ts` | rename only |
 | `common/view/attachSkyCameraInteraction.ts` | `common/view/attachSkyCameraInteraction.ts` | D9: `sky: SkyModel` narrowed to `{ advanceSiderealTime(hours): void }` (drops `onAddStarAt`/Shift-click) |
@@ -84,6 +85,9 @@ All files were copied with global renames:
 | `common/view/WorldMapNode.ts` | Flat equirectangular latitude picker (Phase 7.3; replaced stylized globe) |
 | `sun-paths/view/SunClockNode.ts` | 24-hour clock with hour + minute hands (Flash Time Of Day Clock) |
 | `sun-paths/view/CircleHoverBalloonNode.ts` | Roll-over balloons for celestial circles |
+| `sun-paths/view/SkyBowlShadingNode.ts` | Flash altitude-linked day/night sky bowl |
+| `sun-paths/view/HorizonShadeNode.ts` | Flash `horizonShade` ground darkening |
+| `common/view/CelestialPoleAxisNode.ts` | NCP/SCP axis stubs (from RS; Flash `ncpAxis`/`scpAxis`) |
 | `zodiac/view/lambertProjection.ts` | Pure projection functions (verbatim from ZodiacSkyView.as) |
 | `zodiac/view/ZodiacSkyNode.ts` | Optional Lambert sky: gradient + grid + equator + ecliptic + Sun |
 | `zodiac/view/ZodiacConstellationsNode.ts` | Lambert-projected constellation polylines + labels |
@@ -115,8 +119,11 @@ SunPathsScreenView (ScreenView)
   │    └─ 7 Text rows — altitude, azimuth, RA, dec, hour angle, sidereal time, EoT
   ├─ SunPathsSkyNode (Node)
   │    ├─ hitRect (Rectangle) — camera drag + keyboard target
+  │    ├─ SkyBowlShadingNode — altitude-linked day/night bowl
   │    ├─ HorizonGroundNode
+  │    ├─ HorizonShadeNode — Flash horizonShade
   │    ├─ HorizonDomeNode
+  │    ├─ CelestialPoleAxisNode — NCP/SCP stubs
   │    ├─ CelestialEquatorOnHorizonNode
   │    ├─ HourCircleOnHorizonNode
   │    ├─ EclipticOnHorizonNode
@@ -202,7 +209,7 @@ These are fixed and must not be re-derived (full rationale in `doc/porting-plan.
 | D2 | One obliquity 23.44° for all three screens; zodiacSimulator's 23.5° normalized to it |
 | D3 | Lambert sky constellation art = polylines from SSM `ZodiacConstellationsData.ts`. Geocentric view uses Flash stick figures from `ZodiacFlashConstellationsData.ts` |
 | D4 | Animated jumps = cubic ease-in-out inside `step(dt)`; no Flash Timer/twixt |
-| D5 | Sun Paths uses horizon-frame `SkyProjection`; no RS `CelestialSphereNode`/`SkyModel`. Geocentric Zodiac reuses `SkyProjection` + camera drag for the sphere |
+| D5 | Sun Paths uses horizon-frame `SkyProjection` (not RS `CelestialSphereNode`/`SkyModel` or WebGL). Flash-faithful sky/horizon shade + NCP/SCP axes live in `SkyBowlShadingNode` / `HorizonShadeNode` / `CelestialPoleAxisNode`. Geocentric Zodiac reuses `SkyProjection` + camera drag |
 | D6 | Draggable Sun moves along its declination circle (= controls time of day) |
 | D7 | ~~Screen 2 exposes SIMPLE mode only~~ — **superseded:** Screen 2 now shows a SIMPLE/JULIAN year-length radio bound to `timeMaster.modeProperty`; the day-of-year slider hides in JULIAN mode (matches Flash). See `doc/parity-report.md` |
 | D8 | Zodiac screen adds `ZodiacSunStrip` even though Flash lacked it |
