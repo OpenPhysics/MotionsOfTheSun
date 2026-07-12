@@ -35,7 +35,7 @@ import {
   getSiderealTimeHours,
   getSunPosition,
 } from "../../common/SunEphemeris.js";
-import { TimeModel } from "../../common/TimeModel.js";
+import { TimeModel, timeSpeedMultiplier } from "../../common/TimeModel.js";
 import {
   ANIMATION_HOURS_PER_SECOND,
   DAY_OF_YEAR_RANGE,
@@ -74,16 +74,6 @@ export type SunPathsModelOptions = {
 };
 
 const YEAR_SPAN = DAY_OF_YEAR_RANGE.max - DAY_OF_YEAR_RANGE.min;
-
-function getSpeedMultiplier(speed: TimeSpeed): number {
-  if (speed === TimeSpeed.SLOW) {
-    return 0.25;
-  }
-  if (speed === TimeSpeed.FAST) {
-    return 4;
-  }
-  return 1;
-}
 
 /** Wraps a day value back into [DAY_OF_YEAR_RANGE.min, DAY_OF_YEAR_RANGE.max). */
 const wrapDay = (day: number): number =>
@@ -212,7 +202,7 @@ export class SunPathsModel implements TModel {
     if (!this.timer.isPlayingProperty.value) {
       return;
     }
-    const multiplier = getSpeedMultiplier(this.timeSpeedProperty.value);
+    const multiplier = timeSpeedMultiplier(this.timeSpeedProperty.value);
 
     if (this.animationModeProperty.value === "stepByDay") {
       // Step-by-day: accrue elapsed time and advance the DATE by whole days

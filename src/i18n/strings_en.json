@@ -162,7 +162,7 @@
     "east": "E",
     "west": "W",
     "skyViewMode": "Sky View",
-    "earthCenteredViewMode": "Earth-Centered View",
+    "earthCenteredViewMode": "Geocentric View",
     "viewMode": "View Mode"
   },
   "a11y": {
@@ -219,7 +219,7 @@
     },
     "zodiac": {
       "screenSummary": {
-        "playArea": "The play area shows the Sun's yearly motion along the ecliptic through the zodiac constellations.",
+        "playArea": "The play area shows a geocentric celestial sphere with Earth at the center, the Sun on the ecliptic, and the zodiac constellations. Drag to rotate the view; use the day-of-year slider to move through the year.",
         "controlArea": "The control area has a Reset All button that returns the screen to its starting state.",
         "interactionHint": "Explore the screen by interacting with its controls."
       },

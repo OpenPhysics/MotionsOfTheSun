@@ -34,14 +34,22 @@ export type SkyProjectionOptions = {
   azimuth?: number;
   /** Initial camera tilt, radians (negative looks down onto the sphere). */
   elevation?: number;
+  /**
+   * Absolute elevation clamp in radians applied by {@link rotateBy}.
+   * Defaults just shy of ±π/2 so the sphere never flips over the poles.
+   */
+  maxElevation?: number;
 };
 
 // The camera tilt is clamped just shy of the poles so the sphere never flips.
-const MAX_ELEVATION = Math.PI / 2 - 1e-3;
+const DEFAULT_MAX_ELEVATION = Math.PI / 2 - 1e-3;
 
 export class SkyProjection {
   public center: Vector2;
   public radius: number;
+
+  /** Absolute elevation clamp used by {@link rotateBy}. */
+  public readonly maxElevation: number;
 
   /** Camera spin about the world vertical axis (Z). Adjusted by horizontal drag. */
   public readonly azimuthProperty: NumberProperty;
@@ -64,11 +72,13 @@ export class SkyProjection {
       radius: 150,
       azimuth: 0,
       elevation: 0,
+      maxElevation: DEFAULT_MAX_ELEVATION,
       ...providedOptions,
     };
 
     this.center = options.center;
     this.radius = options.radius;
+    this.maxElevation = options.maxElevation;
     this.azimuthProperty = new NumberProperty(options.azimuth);
     this.elevationProperty = new NumberProperty(options.elevation);
     this.frameMatrixProperty = new Property(Matrix3.identity());
@@ -122,7 +132,11 @@ export class SkyProjection {
   /** Adjusts the camera by drag deltas (radians), clamping elevation. */
   public rotateBy(deltaAzimuth: number, deltaElevation: number): void {
     this.azimuthProperty.value += deltaAzimuth;
-    this.elevationProperty.value = clamp(this.elevationProperty.value + deltaElevation, -MAX_ELEVATION, MAX_ELEVATION);
+    this.elevationProperty.value = clamp(
+      this.elevationProperty.value + deltaElevation,
+      -this.maxElevation,
+      this.maxElevation,
+    );
   }
 
   /**

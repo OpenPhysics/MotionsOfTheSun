@@ -80,14 +80,15 @@ export const equatorialToHorizontal = (
   const lat = degToRad(latitudeDeg);
   const ha = hoursToRadians(hourAngle(raHours, lstHours));
 
-  const sinAlt = Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(ha);
-  const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
-  const cosAlt = Math.cos(alt);
+  // Derive alt/az from the horizon-frame components (north, east, up) rather than
+  // dividing by cos(lat)·cos(alt); the latter is 0/0 at the poles / zenith and
+  // yields NaN azimuth. atan2 stays well-defined everywhere.
+  const north = Math.sin(dec) * Math.cos(lat) - Math.cos(dec) * Math.sin(lat) * Math.cos(ha);
+  const east = -Math.cos(dec) * Math.sin(ha);
+  const up = Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(ha);
 
-  // Azimuth from North through East. atan2 keeps the correct quadrant.
-  const sinAz = (-Math.cos(dec) * Math.sin(ha)) / cosAlt;
-  const cosAz = (Math.sin(dec) - Math.sin(lat) * sinAlt) / (Math.cos(lat) * cosAlt);
-  const az = normalizeDegrees(radToDeg(Math.atan2(sinAz, cosAz)));
+  const alt = Math.asin(Math.max(-1, Math.min(1, up)));
+  const az = normalizeDegrees(radToDeg(Math.atan2(east, north)));
 
   return { altDeg: radToDeg(alt), azDeg: az };
 };

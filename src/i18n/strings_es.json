@@ -219,7 +219,7 @@
     },
     "zodiac": {
       "screenSummary": {
-        "playArea": "El área de juego muestra el movimiento anual del Sol a lo largo de la eclíptica por las constelaciones del zodíaco.",
+        "playArea": "El área de juego muestra una esfera celeste geocéntrica con la Tierra en el centro, el Sol en la eclíptica y las constelaciones del zodíaco. Arrastre para rotar la vista; use el deslizador del día del año para recorrer el año.",
         "controlArea": "El área de control tiene un botón Restablecer todo que devuelve la pantalla a su estado inicial.",
         "interactionHint": "Explora la pantalla interactuando con sus controles."
       },

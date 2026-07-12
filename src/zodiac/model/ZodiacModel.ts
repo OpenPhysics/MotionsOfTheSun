@@ -25,6 +25,7 @@ import type { TModel } from "scenerystack/joist";
 import { TimeMaster } from "../../common/model/TimeMaster.js";
 import { TimeModel } from "../../common/TimeModel.js";
 import {
+  JULIAN_TROPICAL_YEAR,
   MONTH_START_DOY,
   OBLIQUITY_DEG,
   SIMPLE_TROPICAL_YEAR,
@@ -36,7 +37,7 @@ import {
 } from "../../MotionsOfTheSunConstants.js";
 import MotionsOfTheSunNamespace from "../../MotionsOfTheSunNamespace.js";
 
-/** Zodiac screen view mode (Phase 8): Lambert sky vs Earth-centered diagram. */
+/** Zodiac screen view mode: Lambert sky vs lab geocentric celestial sphere. */
 export type ZodiacViewMode = "sky" | "earthCentered";
 
 const TWO_PI = 2 * Math.PI;
@@ -131,8 +132,9 @@ export class ZodiacModel implements TModel {
   public readonly celestialEquatorLabelVisibleProperty: BooleanProperty;
 
   /**
-   * View mode toggle (Phase 8): `"sky"` = Lambert sky view (default);
-   * `"earthCentered"` = top-down ecliptic diagram with Earth at the center.
+   * View mode toggle:
+   *  - `"earthCentered"` — lab geocentric Zodiac Explorer (`zodiac.swf`) sphere (default)
+   *  - `"sky"` — Lambert observer sky view (zodiacSimulator)
    */
   public readonly viewModeProperty: Property<ZodiacViewMode>;
 
@@ -201,13 +203,13 @@ export class ZodiacModel implements TModel {
     this.constellationLabelsVisibleProperty = new BooleanProperty(false);
     this.eclipticLabelVisibleProperty = new BooleanProperty(false);
     this.celestialEquatorLabelVisibleProperty = new BooleanProperty(false);
-    this.viewModeProperty = new Property<ZodiacViewMode>("sky");
+    this.viewModeProperty = new Property<ZodiacViewMode>("earthCentered");
 
     // ── Derived: sun longitude ──────────────────────────────────────────────
     this.sunLongitudeRadProperty = new DerivedProperty(
       [this.timeMaster.solarDaysSinceVernalEquinoxProperty, this.timeMaster.modeProperty],
       (daysSinceVE, mode) => {
-        const Y = mode === "simple" ? SIMPLE_TROPICAL_YEAR : 365.25;
+        const Y = mode === "simple" ? SIMPLE_TROPICAL_YEAR : JULIAN_TROPICAL_YEAR;
         return sunLongitude(daysSinceVE, Y);
       },
     );

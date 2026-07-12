@@ -400,6 +400,31 @@ const MotionsOfTheSunColors = {
     default: "#aabbcc",
     projector: "#334455",
   }),
+
+  /**
+   * Day-side fill of the Flash zodiac-band gradient (0xAECDFF at ~60% alpha).
+   * Used under a translucent Path so alpha is applied via node opacity.
+   */
+  zodiacBandDayColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "zodiacBandDay", {
+    default: "#aecdff",
+    projector: "#7eb0e8",
+  }),
+
+  /**
+   * Night-side fill of the Flash zodiac-band gradient (0x474747 at ~60% alpha).
+   */
+  zodiacBandNightColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "zodiacBandNight", {
+    default: "#474747",
+    projector: "#666666",
+  }),
+
+  /**
+   * Earth's rotational axis in the geocentric zodiac view (Flash 0xEF5050).
+   */
+  earthAxisColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "earthAxis", {
+    default: "#ef5050",
+    projector: "#c62828",
+  }),
 };
 
 export default MotionsOfTheSunColors;

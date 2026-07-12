@@ -20,20 +20,9 @@ import { EnumerationProperty } from "scenerystack/axon";
 import type { TModel } from "scenerystack/joist";
 import { TimeSpeed } from "scenerystack/scenery-phet";
 import { TimeMaster } from "../../common/model/TimeMaster.js";
-import { TimeModel } from "../../common/TimeModel.js";
+import { TimeModel, timeSpeedMultiplier } from "../../common/TimeModel.js";
 import { SOLAR_DAYS_PER_SECOND } from "../../MotionsOfTheSunConstants.js";
 import MotionsOfTheSunNamespace from "../../MotionsOfTheSunNamespace.js";
-
-/** Maps TimeSpeed enum values to a real-seconds multiplier. */
-function getSpeedMultiplier(speed: TimeSpeed): number {
-  if (speed === TimeSpeed.SLOW) {
-    return 0.25;
-  }
-  if (speed === TimeSpeed.FAST) {
-    return 4;
-  }
-  return 1; // NORMAL
-}
 
 export class SiderealSolarTimeModel implements TModel {
   /** Manages solar/sidereal time, eased jumps, and isAt* derived properties. */
@@ -76,7 +65,7 @@ export class SiderealSolarTimeModel implements TModel {
     this.timeMaster.step(dt);
 
     if (this.timer.isPlayingProperty.value && !this.timeMaster.isAnimatingProperty.value) {
-      const multiplier = getSpeedMultiplier(this.timeSpeedProperty.value);
+      const multiplier = timeSpeedMultiplier(this.timeSpeedProperty.value);
       this.timeMaster.incrementSolarTime(dt * SOLAR_DAYS_PER_SECOND * multiplier);
     }
   }

@@ -219,7 +219,7 @@
     },
     "zodiac": {
       "screenSummary": {
-        "playArea": "La zone de jeu montre le mouvement annuel du Soleil le long de l'écliptique à travers les constellations du zodiaque.",
+        "playArea": "La zone de jeu montre une sphère céleste géocentrique avec la Terre au centre, le Soleil sur l'écliptique et les constellations du zodiaque. Faites glisser pour faire pivoter la vue ; utilisez le curseur du jour de l'année pour parcourir l'année.",
         "controlArea": "La zone de contrôle comporte un bouton Tout réinitialiser qui ramène l'écran à son état initial.",
         "interactionHint": "Explorez l'écran en interagissant avec ses commandes."
       },

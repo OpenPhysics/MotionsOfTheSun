@@ -46,6 +46,18 @@
  */
 
 import { BooleanProperty, NumberProperty } from "scenerystack/axon";
+import { TimeSpeed } from "scenerystack/scenery-phet";
+
+/** Real-seconds multiplier for a {@link TimeSpeed}: SLOW = 0.25×, NORMAL = 1×, FAST = 4×. */
+export const timeSpeedMultiplier = (speed: TimeSpeed): number => {
+  if (speed === TimeSpeed.SLOW) {
+    return 0.25;
+  }
+  if (speed === TimeSpeed.FAST) {
+    return 4;
+  }
+  return 1; // NORMAL
+};
 
 export class TimeModel {
   /** Whether the simulation clock is running. Bind to TimeControlNode. */

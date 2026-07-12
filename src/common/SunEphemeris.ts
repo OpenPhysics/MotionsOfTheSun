@@ -42,6 +42,9 @@ const a = EOT_FUNDAMENTAL_RAD_PER_DAY;
  * @returns `{ raHours, decDeg }` — right ascension in hours [0, 24), declination in degrees
  */
 export const getSunPosition = (day: number): { raHours: number; decDeg: number } => {
+  // The linear (secular) term coefficient is the transcribed value from utils.js;
+  // it is the mean-motion rate and equals `a` (EOT_FUNDAMENTAL_RAD_PER_DAY) to the
+  // gist's rounding — the ~4e-9 rad/day difference is negligible (<0.001″ over a year).
   const ra =
     0.01721421 * day -
     1.3793756 -

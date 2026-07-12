@@ -26,13 +26,7 @@
 import { Multilink } from "scenerystack/axon";
 import { clamp } from "scenerystack/dot";
 import { Circle, DragListener, KeyboardListener, Node } from "scenerystack/scenery";
-import {
-  altAzToVector3,
-  equatorialToHorizontal,
-  hourAngle,
-  normalizeHours,
-  radToDeg,
-} from "../../common/SkyCoordinates.js";
+import { equatorialToHorizonVector, hourAngle, normalizeHours, radToDeg } from "../../common/SkyCoordinates.js";
 import type { SkyProjection } from "../../common/SkyProjection.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import MotionsOfTheSunColors from "../../MotionsOfTheSunColors.js";
@@ -95,8 +89,9 @@ export class SunNode extends Node {
         model.showUndersideProperty,
       ],
       (_m, ra, dec, lat, lst, showUnderside) => {
-        const v = equatorialToHorizontal(ra, dec, lat, lst);
-        const worldV = altAzToVector3(v.altDeg, v.azDeg);
+        // Use the horizon-vector form (NaN-free at the poles, where the alt/az
+        // azimuth is undefined) — matches every other overlay on this dome.
+        const worldV = equatorialToHorizonVector(ra, dec, lat, lst);
         const { point, depth } = projection.projectWithDepth(worldV);
         const isFront = depth >= 0;
         this.visible = isFront || showUnderside;
