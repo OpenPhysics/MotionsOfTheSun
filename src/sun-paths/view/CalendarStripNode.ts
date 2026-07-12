@@ -6,7 +6,7 @@
  *   deltaPx wrapped into ±half-width before converting to day delta.
  *
  * Sets the integer part of `dayOfYearProperty` (preserves time-of-day fraction).
- * Jan 1 = day 1 (sim convention).
+ * Flash convention: Jan 1 = day 0; year wraps at 365.
  *
  * Contrast: the strip is a light control surface in BOTH profiles, so month
  * labels, dividers, and the marker use dark ink (`controlSurfaceText`), not
@@ -25,21 +25,23 @@ import {
   SIMPLE_TROPICAL_YEAR,
 } from "../../MotionsOfTheSunConstants.js";
 
+/** Wrap an integer DOY into [0, 365). */
+const wrapIntDay = (dayInt: number): number => ((dayInt % 365) + 365) % 365;
+
 /**
- * Map day-of-year (1 = Jan 1) to x in [0, width].
- * Uses 0-based DOY fraction over a 365-day year for placement.
+ * Map day-of-year (0 = Jan 1) to x in [0, width].
  */
 function dayToX(dayOfYear: number, width: number): number {
-  const doy0 = Math.max(0, Math.min(SIMPLE_TROPICAL_YEAR, Math.floor(dayOfYear) - 1));
+  const doy0 = Math.max(0, Math.min(SIMPLE_TROPICAL_YEAR - 1, Math.floor(dayOfYear)));
   return (doy0 / SIMPLE_TROPICAL_YEAR) * width;
 }
 
 /**
- * Map x to integer day-of-year (1…365), wrapping via modular arithmetic.
+ * Map x to integer day-of-year (0…364), wrapping via modular arithmetic.
  */
 function xToDay(x: number, width: number): number {
   const frac = (((x / width) % 1) + 1) % 1;
-  return Math.max(1, Math.min(365, Math.floor(frac * SIMPLE_TROPICAL_YEAR) + 1));
+  return Math.max(0, Math.min(364, Math.floor(frac * SIMPLE_TROPICAL_YEAR)));
 }
 
 export type CalendarStripNodeOptions = {
@@ -116,7 +118,7 @@ export class CalendarStripNode extends Node {
 
     const setDayInteger = (dayInt: number): void => {
       const frac = options.dayOfYearProperty.value % 1;
-      const next = dayInt + frac;
+      const next = wrapIntDay(dayInt) + frac;
       if (Math.abs(options.dayOfYearProperty.value - next) > 1e-9) {
         options.dayOfYearProperty.value = next;
       }
@@ -143,11 +145,8 @@ export class CalendarStripNode extends Node {
             deltaPx -= width;
           }
           const timeDelta = (SIMPLE_TROPICAL_YEAR / width) * deltaPx;
-          const currentInt = Math.max(1, Math.floor(options.dayOfYearProperty.value));
-          let nextInt = Math.round(currentInt + timeDelta);
-          // Wrap into 1…365
-          nextInt = ((((nextInt - 1) % 365) + 365) % 365) + 1;
-          setDayInteger(nextInt);
+          const currentInt = wrapIntDay(Math.floor(options.dayOfYearProperty.value));
+          setDayInteger(Math.round(currentInt + timeDelta));
         },
       }),
     );
@@ -157,11 +156,11 @@ export class CalendarStripNode extends Node {
       new DragListener({
         press: (event) => {
           const local = this.globalToLocalPoint(event.pointer.point);
-          const currentInt = Math.max(1, Math.floor(options.dayOfYearProperty.value));
+          const currentInt = wrapIntDay(Math.floor(options.dayOfYearProperty.value));
           if (local.x < marker.x - 1) {
-            setDayInteger(((((currentInt - 2) % 365) + 365) % 365) + 1);
+            setDayInteger(currentInt - 1);
           } else if (local.x > marker.x + 1) {
-            setDayInteger((currentInt % 365) + 1);
+            setDayInteger(currentInt + 1);
           } else {
             setDayInteger(xToDay(local.x, width));
           }
@@ -173,9 +172,9 @@ export class CalendarStripNode extends Node {
       new KeyboardListener({
         keys: ["arrowLeft", "arrowRight"],
         fire: (_event, keysPressed) => {
-          const currentInt = Math.max(1, Math.floor(options.dayOfYearProperty.value));
+          const currentInt = wrapIntDay(Math.floor(options.dayOfYearProperty.value));
           const delta = keysPressed.includes("arrowRight") ? 1 : -1;
-          setDayInteger(((((currentInt - 1 + delta) % 365) + 365) % 365) + 1);
+          setDayInteger(currentInt + delta);
         },
       }),
     );

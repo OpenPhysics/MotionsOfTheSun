@@ -12,7 +12,10 @@
  * on all three screens.
  *
  * ── Conventions ──────────────────────────────────────────────────────────────
- *  - `day` = decimal day-of-year; Jan 1 00:00 UT = 1.0 (Jan 1 noon ≈ 1.5).
+ *  - `day` = decimal day-of-year (Flash / Siedell): Jan 1 00:00 UT = 0.0
+ *    (Jan 1 noon ≈ 0.5; May 27 noon = 146.5). Same Fourier coefficients as
+ *    `Solar Position Functions.as` / CCNMTL `utils.js`; do **not** feed 1-based
+ *    JS-Date DOY into these functions.
  *  - RA is returned in decimal hours [0, 24).
  *  - Declination is returned in degrees.
  *  - Hour angle is in hours, wrapped to [−12, 12].
@@ -38,7 +41,7 @@ const a = EOT_FUNDAMENTAL_RAD_PER_DAY;
  * The polynomial/Fourier expansion of RA matches `getPosition` in utils.js verbatim.
  * The declination is derived from RA via the obliquity: `dec = atan2(sin ra, cot ε)`.
  *
- * @param day - decimal day-of-year (Jan 1 00:00 UT = 1.0)
+ * @param day - decimal day-of-year (Jan 1 00:00 UT = 0.0; Flash convention)
  * @returns `{ raHours, decDeg }` — right ascension in hours [0, 24), declination in degrees
  */
 export const getSunPosition = (day: number): { raHours: number; decDeg: number } => {
@@ -69,7 +72,7 @@ export const getSunPosition = (day: number): { raHours: number; decDeg: number }
  * Positive means the apparent sun is ahead of the mean sun (solar noon is early).
  * Transcribed verbatim from `getEqnOfTime` in utils.js.
  *
- * @param day - decimal day-of-year (Jan 1 00:00 UT = 1.0)
+ * @param day - decimal day-of-year (Jan 1 00:00 UT = 0.0; Flash convention)
  */
 export const getEqnOfTimeRad = (day: number): number =>
   -4.3796019e-6 +
@@ -100,7 +103,7 @@ export const getEqnOfTimeMinutes = (day: number): number => getEqnOfTimeHours(da
  * Transcribed verbatim from `getSiderealTime` in utils.js.
  * Uses epoch offset 0.280464857844662 and sidereal rate 1.0027397260274 sid-day/solar-day.
  *
- * @param day - decimal day-of-year (Jan 1 00:00 UT = 1.0)
+ * @param day - decimal day-of-year (Jan 1 00:00 UT = 0.0; Flash convention)
  * @returns GMST in hours [0, 24)
  */
 export const getSiderealTimeHours = (day: number): number =>

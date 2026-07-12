@@ -7,7 +7,7 @@
  * Algorithm (from the porting plan)
  * ──────────────────────────────────
  *   T = frac(dayOfYear) × 24        mean clock time in hours (0 = midnight, 12 = noon)
- *   for d = 1 … 365:
+ *   for d = 0 … 364:
  *     (ra_d, dec_d) = getSunPosition(d)
  *     H_d  = (T − 12) + eqnOfTimeHours(d)   hour angle at mean clock time T
  *     lst  = ra_d + H_d                       local sidereal time that gives H_d
@@ -59,7 +59,7 @@ export class AnalemmaNode extends Node {
         const back = new Shape();
 
         const points = [];
-        for (let d = 1; d <= 365; d++) {
+        for (let d = 0; d < 365; d++) {
           const { raHours: ra, decDeg: dec } = getSunPosition(d);
           const eotHours = getEqnOfTimeHours(d);
           // Hour angle at mean clock time T

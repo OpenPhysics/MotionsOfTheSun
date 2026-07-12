@@ -114,13 +114,17 @@ export const LATITUDE_RANGE = new Range(-90, 90);
 export const DEFAULT_LATITUDE = 40.8;
 
 /**
- * Default day of year (fractional; Jan 1 = 1, so 0.5 = just before Jan 1 midnight).
- * 147.5 ≈ May 27 noon (mean solar time).
+ * Default day of year (fractional; Flash / `Solar Position Functions.as` convention).
+ * Jan 1 00:00 = 0.0; fraction = local mean time / 24. 146.5 = May 27 noon.
+ * (CCNMTL's JS rewrite used 1-based DOY via `Date`; same Fourier coeffs expect 0-based.)
  */
-export const DEFAULT_DAY_OF_YEAR = 147.5;
+export const DEFAULT_DAY_OF_YEAR = 146.5;
 
-/** Allowed day-of-year range (fractional days; 0 to just past Dec 31). */
-export const DAY_OF_YEAR_RANGE = new Range(0, 365.25);
+/**
+ * Allowed day-of-year range (fractional days). Matches Flash `setDay` wrap `% 365`:
+ * values live in [0, 365); Dec 31 is [364, 365).
+ */
+export const DAY_OF_YEAR_RANGE = new Range(0, 365);
 
 /** Rate of sky animation: solar hours of elapsed time per real second. */
 export const ANIMATION_HOURS_PER_SECOND = 3;

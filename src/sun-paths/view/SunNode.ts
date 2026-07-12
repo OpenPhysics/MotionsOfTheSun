@@ -169,8 +169,8 @@ export class SunNode extends Node {
           if (model.sunDragModeProperty.value === "dayOfYear") {
             const delta = keysPressed === "arrowRight" ? 1 : -1;
             const frac = ((model.dayOfYearProperty.value % 1) + 1) % 1;
-            const intDay = Math.max(1, Math.floor(model.dayOfYearProperty.value));
-            const nextInt = ((((intDay - 1 + delta) % 365) + 365) % 365) + 1;
+            const intDay = Math.floor(model.dayOfYearProperty.value);
+            const nextInt = (((intDay + delta) % 365) + 365) % 365;
             model.dayOfYearProperty.value = nextInt + frac;
             return;
           }

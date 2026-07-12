@@ -63,7 +63,7 @@ All files were copied with global renames:
 
 **Cherry-picked (not copied):** `lonToX` formula and sign order from `ptolemaic/view/PtolemaicZodiacStrip.ts` lines 1–90. The class itself was not copied because it couples to `PtolemaicModel`.
 
-**Not used:** `ConfigurationsZodiacStrip`, `ZodiacConstellationNode`. These hardcode `STAR_RADIUS = 235` and `LAT_SCALE = 120` magic radii designed for a Ptolemaic orbital layout. The Zodiac sky view instead uses the **Lambert azimuthal equal-area projection** transcribed from `zodiacSimulator/ZodiacSkyView.as`, which places stars at their correct celestial coordinates without those radii. See `doc/model.md` § "Lambert projection" for the maths.
+**Not used:** `ConfigurationsZodiacStrip`, `ZodiacConstellationNode`. These hardcode `STAR_RADIUS = 235` and `LAT_SCALE = 120` magic radii designed for a Ptolemaic orbital layout. The optional Lambert sky mode uses the **Lambert azimuthal equal-area projection** from `zodiacSimulator/ZodiacSkyView.as` (see `doc/model.md`). The default geocentric view uses Flash stick figures (`ZodiacFlashConstellationsData`) on `SkyProjection`.
 
 ### New files (no donor)
 
@@ -85,10 +85,13 @@ All files were copied with global renames:
 | `sun-paths/view/SunClockNode.ts` | 24-hour clock with hour + minute hands (Flash Time Of Day Clock) |
 | `sun-paths/view/CircleHoverBalloonNode.ts` | Roll-over balloons for celestial circles |
 | `zodiac/view/lambertProjection.ts` | Pure projection functions (verbatim from ZodiacSkyView.as) |
-| `zodiac/view/ZodiacSkyNode.ts` | Sky gradient + grid + equator + ecliptic + Sun; clipped Node |
+| `zodiac/view/ZodiacSkyNode.ts` | Optional Lambert sky: gradient + grid + equator + ecliptic + Sun |
 | `zodiac/view/ZodiacConstellationsNode.ts` | Lambert-projected constellation polylines + labels |
-| `zodiac/view/ZodiacSunStrip.ts` | Zodiac-strip panorama with Sun marker |
-| `zodiac/view/EarthCenteredZodiacNode.ts` | Top-down Earth-centered ecliptic diagram (Phase 8.2) |
+| `zodiac/view/ZodiacSunStrip.ts` | Zodiac-strip panorama with Sun marker (TS addition; Flash lacked it) |
+| `zodiac/model/geocentricZodiacMath.ts` | Flash ZodiacViewer day→az / λ / globe-spin helpers |
+| `zodiac/model/ZodiacFlashConstellationsData.ts` | Stick-figure star polylines from ZodiacViewer.as |
+| `zodiac/view/GeocentricZodiacNode.ts` | Lab geocentric Zodiac Explorer (`zodiac.swf` / zodiac016) |
+| `zodiac/view/zodiacBandGraphics.ts` | ±24° ecliptic band day/night gradient masks + axis helpers |
 
 ---
 
@@ -157,20 +160,20 @@ pdomControlAreaNode.pdomOrder = [dayOfYearSlider, ...jumpButtons(20), timeContro
 ```
 ZodiacScreenView (ScreenView)
   ├─ backgroundRect (Rectangle)
+  ├─ GeocentricZodiacNode — default when viewMode === "earthCentered" (lab zodiac.swf)
   ├─ ZodiacSkyNode (Node, clipped) — visible when viewMode === "sky"
   ├─ ZodiacConstellationsNode — visible when viewMode === "sky"
-  ├─ EarthCenteredZodiacNode — visible when viewMode === "earthCentered" (Phase 8)
   ├─ ZodiacSunStrip (ZodiacStripBackground + sun marker)
   ├─ rightColumn (VBox)
-  │    ├─ viewModeRadioGroup (RectangularRadioButtonGroup: sky | earthCentered)
+  │    ├─ viewModeRadioGroup (RectangularRadioButtonGroup: earthCentered | sky)
   │    ├─ time buttons (−2h/+2h/−6h/+6h/−1mo/+1mo)
   │    ├─ day-of-year slider + label + month-day readout
   │    ├─ constellationCheckbox / eclipticCheckbox / equatorCheckbox
-  │    └─ latitudeNoteText
+  │    └─ latitudeNoteText (Lambert mode only)
   ├─ TimeControlNode
   └─ ResetAllButton
 
-pdomPlayAreaNode.pdomOrder  = []
+pdomPlayAreaNode.pdomOrder  = [geocentricNode (or sky hit target)]
 pdomControlAreaNode.pdomOrder = [viewModeRadioGroup, time buttons ×6, slider, checkboxes ×3,
                                   timeControl, resetAllButton]
 ```
@@ -179,11 +182,13 @@ pdomControlAreaNode.pdomOrder = [viewModeRadioGroup, time buttons ×6, slider, c
 
 ## Porting map (NAAP → screens)
 
-| Screen | NAAP animation (published) | Flash source (decompile target) | JS reference |
+| Screen | Lab SWF (published) | Flash identity | Port primary source |
 |---|---|---|---|
-| Sun Paths | `sunmotions.swf` | `sunMotions068-C.swf` | CCNMTL `sun-motion-simulator/` |
-| Sidereal & Solar Time | `siderealSolarTime.swf` | `siderealSolarTime/siderealSolarTime.swf` | AS3 sources in `flashdev2/siderealSolarTime/` |
-| Zodiac | `zodiac.swf` → `zodiacSimulator` | `zodiacSimulator/zodiacSimulator.swf` | AS3 sources in `flashdev2/zodiacSimulator/` |
+| Sun Paths | `sunmotions.swf` | = `sunMotions068.swf` (decompile default `068-C` is a close sibling) | CCNMTL `sun-motion-simulator/` + Flash |
+| Sidereal & Solar Time | `siderealSolarTime.swf` | = `flashdev2/siderealSolarTime/siderealSolarTime.swf` | AS3 in `flashdev2/siderealSolarTime/` |
+| Zodiac | `zodiac.swf` | ZodiacViewer family (`zodiac016` / `zodiac017`); **not** `zodiacSimulator` | Decompiled ZodiacViewer + `GeocentricZodiacNode` |
+
+Optional Zodiac mode: Lambert sky from `flashdev2/zodiacSimulator/` (`ZodiacSkyNode`).
 
 ---
 
@@ -193,21 +198,23 @@ These are fixed and must not be re-derived (full rationale in `doc/porting-plan.
 
 | # | Decision |
 |---|---|
-| D1 | All Sun Paths math uses CCNMTL `utils.js` closed forms; npm `solar-calculator` is not used |
+| D1 | All Sun Paths math uses CCNMTL/Flash closed forms; **day arg is Flash 0-based** (not CCNMTL 1-based Date DOY); npm `solar-calculator` is not used |
 | D2 | One obliquity 23.44° for all three screens; zodiacSimulator's 23.5° normalized to it |
-| D3 | Constellation art = polylines from `ZodiacConstellationsData.ts`; no AS3 opcode/SVG art |
+| D3 | Lambert sky constellation art = polylines from SSM `ZodiacConstellationsData.ts`. Geocentric view uses Flash stick figures from `ZodiacFlashConstellationsData.ts` |
 | D4 | Animated jumps = cubic ease-in-out inside `step(dt)`; no Flash Timer/twixt |
-| D5 | Sun Paths uses horizon-frame `SkyProjection`; no RS `CelestialSphereNode`/`SkyModel` |
+| D5 | Sun Paths uses horizon-frame `SkyProjection`; no RS `CelestialSphereNode`/`SkyModel`. Geocentric Zodiac reuses `SkyProjection` + camera drag for the sphere |
 | D6 | Draggable Sun moves along its declination circle (= controls time of day) |
 | D7 | ~~Screen 2 exposes SIMPLE mode only~~ — **superseded:** Screen 2 now shows a SIMPLE/JULIAN year-length radio bound to `timeMaster.modeProperty`; the day-of-year slider hides in JULIAN mode (matches Flash). See `doc/parity-report.md` |
 | D8 | Zodiac screen adds `ZodiacSunStrip` even though Flash lacked it |
 | D9 | `attachSkyCameraInteraction`'s `sky` param narrowed to `{ advanceSiderealTime(hours): void }` |
 
+**Zodiac screen provenance (supersedes early plan D1 for Zodiac):** the lab embed is the **geocentric** ZodiacViewer (`zodiac.swf` ≈ `zodiac016`; decompile default `zodiac017` is the same family without the rotational axis). Default `viewModeProperty = "earthCentered"` → `GeocentricZodiacNode`. Optional `"sky"` → Lambert `zodiacSimulator` view.
+
 ---
 
 ## Colour scheme
 
-`src/MotionsOfTheSunColors.ts` defines `ProfileColorProperty` instances for "default" (dark) and "projector" (light) profiles. SceneryStack switches profiles automatically when the user toggles Projector Mode in Preferences. All colour references go through these properties — never hardcoded hex strings in view code.
+`src/MotionsOfTheSunColors.ts` defines `ProfileColorProperty` instances for "default" (dark) and "projector" (light) profiles. SceneryStack switches profiles automatically when the user toggles Projector Mode in Preferences. All colour references go through these properties — never hardcoded hex strings in view code. Zodiac band / axis colours: `zodiacBandDayColorProperty`, `zodiacBandNightColorProperty`, `earthAxisColorProperty`.
 
 ---
 
@@ -217,7 +224,6 @@ All planned phases (0–8) are implemented. Optional future polish not in the pl
 
 - `dispose()` calls: most nodes hold external Property listeners created via `.link()`. Add dispose logic once the sim enters a disposal path (e.g., screen deactivation).
 - `public/icons/icon.svg` brand alignment review.
-- Full Flash celestial-sphere renderer for zodiac017 (we ship a simplified top-down ecliptic diagram instead — see "zodiac017 findings" below).
 
 ---
 
@@ -228,47 +234,37 @@ All planned phases (0–8) are implemented. Optional future polish not in the pl
 
 ---
 
-## zodiac017 findings
+## Lab Zodiac Explorer findings (`zodiac.swf` / ZodiacViewer)
 
-Source: `NAAP/decompiled/zodiac017/` (lab SWF `zodiac017`, NAAP *Seasons and the Zodiac* demo). Decompiled via `npm run decompile` (Phase 8.1).
+Sources: lab `astroUNL/naap/motion3/animations/zodiac.swf` (ZodiacViewer family); AIR/`flashdev2` ships `zodiac016.swf` (with rotational axis); decompile default `zodiac017` is the same scene without that axis. Ported as `GeocentricZodiacNode` (+ `geocentricZodiacMath.ts`, `zodiacBandGraphics.ts`).
 
 ### Scene layout
 
-- **Geocentric celestial sphere** (`CelestialSphere`): diameter `initZodiacSize = 600` px; draggable, `maxViewerAltitude = 50°`, default `theta = 206°`, `phi = 30°`.
-- **Earth at center**: `GlobeComponent` at `{az, alt:0, r:0.001}`. Scale from `initEarthDiskSize = 35`, `initEarthOrbitSize = 250`.
-- **Sun on the rim**: `sunDisk` at `{az: az+180, alt:0, r:0.9999}` — opposite Earth on the ecliptic plane.
-- **Zodiac band**: invisible `bandCircle` at ±24°; gradient wedge follows `globe.az − 90°`. Ecliptic at obliquity 23.5° (normalized to 23.44° in this port — D2).
-- **Constellations**: 12 zodiac stick figures + labels on the sphere; front/back depth split. Horizon plane removed — pure sphere view.
+- **Geocentric celestial sphere**: diameter `initZodiacSize = 600` px; drag camera, `maxViewerAltitude = 50°`, default `theta = 206°`, `phi = 30°`.
+- **Earth at center**: globe scaled from `initEarthDiskSize = 35`.
+- **Sun on the ecliptic rim**: opposite Earth on Flash's ecliptic/horizon plane (lat 66.5° + LST 18h so NEP is at zenith).
+- **Zodiac band**: ±24° ecliptic-latitude band with day/night linear gradient (`#aecdff` / `#474747`, ~60% opacity); terminator ±15°.
+- **Rotational axis** (`zodiac016`): NCP–SCP through Earth, extent 1.5× Earth radius, `#ef5050`; front solid / back dashed.
+- **Constellations**: 12 Flash stick figures + labels; front/back depth split. Pure sphere (no horizon mask).
 
 ### Math (`setDayOfYear` → `updateGlobe`)
 
 ```
-az = -0.9863013698630136 * (dayOfYear + 10.8);   // −360/365 °/day
+az = -0.9863013698630136 * (dayOfYear + 10.8);   // −360/365 °/day; Flash DOY Jan 1 = 0
 globe.setPosition({az: az, alt: 0, r: 0.001});
 sunDisk.setPosition({az: az + 180, alt: 0, r: 0.9999});
 siderealDay = dayOfYear * 1.0027397260273974;
 globe.setRotationAngle((siderealDay % 1) * 360);
 ```
 
-- `0.9863… = 360/365`: uniform solar motion (no equation-of-time).
-- `+10.8`: phase offset so day 0 maps near Capricorn / late December.
-- Controls: year slider (`Modified Year Slider`, 0–365) → `changeDay` → `setDayOfYear`.
+Port maps Flash az → ecliptic longitude via `λ_deg = −earthAz − 90` (`geocentricSunLongitudeRad`), calibrated so VE ≈ λ 0° and WS ≈ λ 270°. Obliquity normalized to 23.44° (D2).
 
-### vs. `zodiacSimulator` (Lambert sky view)
+### vs. `zodiacSimulator` (optional Lambert sky)
 
-| | **zodiac017** (lab) | **zodiacSimulator** |
+| | **ZodiacViewer / lab `zodiac.swf`** | **`zodiacSimulator`** |
 |---|---|---|
 | Viewpoint | Geocentric; Earth at sphere center | Observer on Earth (lat 41°N) |
-| Projection | 3D celestial-sphere | Lambert azimuthal equal-area |
-| Horizon | Disabled | Masked; twilight sky gradient |
-| Sun position | From `dayOfYear` via `az` | Direct `sunLongitude` (radians) |
-
-### Port choice (`EarthCenteredZodiacNode`)
-
-Skip the full celestial-sphere renderer. Ship a **top-down ecliptic-plane diagram**:
-
-1. Earth at origin; ecliptic circle of radius `EARTH_CENTERED_ORBIT_RADIUS`.
-2. 12 sign markers at `λ = i · 30°` (Aries at λ=0).
-3. Sun at shared `sunLongitudeRadProperty` (same as sky view / strip — gate: sight-line sign matches strip).
-4. Sight-line Earth → Sun → highlighted sign.
-5. Toggle via `viewModeProperty: "sky" | "earthCentered"` and a `RectangularRadioButtonGroup`.
+| Projection | 3D celestial sphere (`SkyProjection`) | Lambert azimuthal equal-area |
+| Horizon | None | Masked; twilight sky gradient |
+| Sun position | From calendar DOY via az → λ | From `solarDaysSinceVE` → λ |
+| Port node | `GeocentricZodiacNode` (default) | `ZodiacSkyNode` (optional mode) |

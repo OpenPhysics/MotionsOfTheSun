@@ -4,18 +4,20 @@ A three-screen [SceneryStack](https://scenerystack.org/) port of the NAAP **Moti
 lab: **Sun Paths**, **Sidereal and Solar Time**, and **Zodiac**.
 Built with Vite 8, TypeScript 7, and Biome 2.
 
-> **Status:** framework scaffold — screens, PWA, CI, localization, and the Flash-decompile
-> workflow are wired up; the per-screen models and views are placeholders awaiting the port.
+> **Status:** three screens implemented (Sun Paths, Sidereal & Solar Time, Zodiac geocentric
+> Explorer + optional Lambert sky). See `doc/parity-report.md` for Flash feature parity and
+> `doc/implementation-notes.md` for architecture.
 
 ## Features
 
-- Three screens (see `doc/porting-plan.md` for the architecture):
+- Three screens (see `doc/implementation-notes.md` / `doc/parity-report.md`):
   1. **Sun Paths** (`src/sun-paths/`) — a horizon diagram showing the Sun's daily path across the
      sky for any latitude and date (NAAP `sunmotions.swf`, the Motions of the Sun simulator).
   2. **Sidereal and Solar Time** (`src/sidereal-solar-time/`) — Earth's rotation vs. its orbit: why
      the solar day is about four minutes longer than the sidereal day (NAAP `siderealSolarTime.swf`).
-  3. **Zodiac** (`src/zodiac/`) — the Sun's yearly motion along the ecliptic through the zodiac
-     constellations (NAAP `zodiac.swf`).
+  3. **Zodiac** (`src/zodiac/`) — geocentric celestial sphere with Earth at the center and the Sun
+     on the ecliptic through the zodiac (NAAP `zodiac.swf` / ZodiacViewer); optional Lambert sky
+     view from `zodiacSimulator`.
 - Model/view separation per screen
 - English, French, and Spanish localization via `StringManager`
 - Default and projector color profiles

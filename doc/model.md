@@ -8,19 +8,30 @@ The simulation covers three aspects of the Sun's apparent motion:
 
 1. **Sun Paths** — the daily arc. For an observer at latitude φ on a given date, the Sun rises, crosses the meridian at its maximum altitude, and sets. The shape of the path and the day length depend on φ and on the Sun's declination (the date).
 2. **Sidereal and Solar Time** — the ~4-minute gap. Because Earth moves ~1° along its orbit each day, it must rotate slightly more than 360° between successive solar noons: the solar day (24 h) is longer than the sidereal day (23 h 56 m 4 s).
-3. **Zodiac** — the yearly circuit. The Sun's apparent position drifts eastward ~1°/day along the ecliptic, passing through the zodiac constellations over a year; this also determines which constellations are visible at night.
+3. **Zodiac** — the yearly circuit. Default: geocentric celestial sphere (Earth at center, Sun
+   on the ecliptic through the zodiac). Optional: observer Lambert sky at 41° N. The Sun's
+   apparent position drifts eastward ~1°/day along the ecliptic over a year.
 
 ---
 
 ## Day-of-year convention
 
-Throughout the sim, **day-of-year** (DOY) is a decimal number where **Jan 1 00:00 UT = 1.0**:
+Throughout **Sun Paths**, **day-of-year** (DOY) follows Flash `sunMotions068` /
+`Solar Position Functions.as`: a decimal number where **Jan 1 00:00 UT = 0.0**:
 
-- Integer part → calendar date (1 = Jan 1, 365 = Dec 31 in a non-leap year).
+- Integer part → calendar date (0 = Jan 1, 364 = Dec 31 in a non-leap year).
 - Fractional part → local mean time / 24 (0.0 = midnight, 0.5 = noon).
-- `DEFAULT_DAY_OF_YEAR = 147.5` → May 27, solar noon (close to the CCNMTL default).
+- Year wrap = `% 365` (same as Flash `Simulation Master.setDay`), not 365.25.
+- `DEFAULT_DAY_OF_YEAR = 146.5` → May 27, solar noon (Flash `Simulation Master` default).
 
-**Vernal Equinox offset:** the CCNMTL `utils.js` math treats DOY 1 as the reference; the VE falls near DOY 79 (~March 20). The Zodiac screen uses `VE_DOY_OFFSET = 78` (so `doy − 1 + 78` mod 365 gives days-since-VE).
+The Fourier coefficients match CCNMTL `utils.js` / the Siedell gist, but those JS
+helpers were fed **1-based** DOY from `Date` (`getDayOfYear`). Feeding 147.5 for
+May 27 noon shifts RA/dec by ~0.07 h / ~0.16° versus Flash. This port feeds the
+**0-based** argument the coefficients were written for.
+
+**Vernal Equinox offset:** with 0-based DOY the VE falls near DOY 78–79 (~March 20).
+The Zodiac screen uses `VE_DOY_OFFSET = 78` (days-since-VE bookkeeping; independent
+of Sun Paths ephemeris input).
 
 **TimeMaster epoch:** `SOLAR_TIME_AT_EPOCH = 0.5` means "solarTime = 0.5" represents solar noon on the vernal equinox (March 20). All TimeMaster time values are measured in **solar days** from that epoch.
 
@@ -30,7 +41,7 @@ Throughout the sim, **day-of-year** (DOY) is a decimal number where **Jan 1 00:0
 
 ### Deviation notes (D1, D2)
 
-- **D1:** All solar math uses the closed-form set from the CCNMTL `sun-motion-simulator/src/utils.js` (`getPosition`, `getEqnOfTime`, `getSiderealTime`). The npm `solar-calculator` dependency is **not** used. The formulas are self-consistent and dependency-free; deviations from high-precision ephemerides are ≤ 1° in declination and ≤ 2 minutes in the equation of time — invisible at screen scale.
+- **D1:** All solar math uses the closed-form set from the CCNMTL `sun-motion-simulator/src/utils.js` (`getPosition`, `getEqnOfTime`, `getSiderealTime`), which matches Flash `Solar Position Functions.as`. The npm `solar-calculator` dependency is **not** used. **Day indexing follows Flash (0-based), not CCNMTL's `Date`-derived 1-based DOY** — see “Day-of-year convention” above.
 - **D2:** One obliquity, **ε = 23.44°** (`COT_OBLIQUITY = 2.30644456403329 = cos ε / sin ε`), is used for all three screens. The `zodiacSimulator` ActionScript used 23.5°; this discrepancy of 0.06° is invisible at screen scale.
 
 ### Solar position (`getSunPosition(day)`)
@@ -156,11 +167,27 @@ Ensures jumps always move forward in time.
 
 ---
 
-## Screen 3 — Zodiac: Lambert azimuthal equal-area projection
+## Screen 3 — Zodiac
 
-The sky view uses the **Lambert azimuthal equal-area** projection, transcribed verbatim from `zodiacSimulator/ZodiacSkyView.as`. The observer is fixed at latitude 41° N looking south.
+Two view modes share `ZodiacModel` time / Sun longitude:
 
-### Constants
+1. **Geocentric (default)** — lab Zodiac Explorer (`zodiac.swf` / ZodiacViewer). Earth at the
+   center of a celestial sphere; Sun on the ecliptic rim; Flash stick figures; day/night band;
+   rotational axis (`zodiac016`). Math in `geocentricZodiacMath.ts` (Flash DOY Jan 1 = 0):
+
+```
+earthAz_deg = −360/365 × (doy + 10.8)
+λ_rad       = (−earthAz − 90°) → [0, 2π)     # VE ≈ 0°, WS ≈ 270°
+globeSpin   = (doy × SIDEREAL_RATE) mod 1 × 2π
+```
+
+Bodies are placed in the equatorial frame via `eclipticToVector3` / `SkyProjection`
+(Flash used lat 66.5° + LST 18h so the horizon plane *was* the ecliptic).
+
+2. **Lambert sky (optional)** — transcribed from `zodiacSimulator/ZodiacSkyView.as`. Observer
+   fixed at latitude 41° N looking south.
+
+### Lambert constants
 
 - View center: azimuth θ₀ = π (south), altitude φ₀ = −0.1 rad (~−5.7°, just below the horizon to centre the sky).
 - Sizing: `height = 0.54·width`; projection origin at `(width/2, 0.49·width)`; `size = 1.07·width`; scale `S = size/4`.
@@ -215,7 +242,7 @@ Day within month: `day = floor(doy − MONTH_START_DOY[i]) + 1`.
 
 The `−0.5` adjusts for `solarDaysSinceVE` counting from noon (epoch = 0.5 solar days), and `+78` shifts from VE (DOY ~79) to Jan 1 (DOY 1).
 
-### Sun ecliptic longitude
+### Sun ecliptic longitude (shared model / Lambert)
 
 ```
 λ = (solarDaysSinceVE / tropicalYear) · 2π
@@ -224,6 +251,9 @@ sunRaRad  = atan2(sin λ · cos ε, cos λ)
 ```
 
 Zodiac sign index: `floor(λ_normalized / (2π/12))` where λ_normalized ∈ [0, 2π).
+
+Geocentric view may derive λ from Flash calendar DOY instead (`geocentricSunLongitudeRad`);
+the strip and Lambert mode use the shared `sunLongitudeRadProperty` above.
 
 ---
 
@@ -245,5 +275,6 @@ Zodiac sign index: `floor(λ_normalized / (2π/12))` where λ_normalized ∈ [0,
 
 - CCNMTL `sun-motion-simulator/src/utils.js` — source of all Sun Paths solar math (D1).
 - NAAP `siderealSolarTime/TimeMaster.as` — TimeMaster port source of truth.
-- NAAP `zodiacSimulator/ZodiacSkyView.as` — Lambert projection source of truth.
+- NAAP ZodiacViewer (`zodiac.swf` / `zodiac016`) — geocentric Zodiac Explorer source of truth.
+- NAAP `zodiacSimulator/ZodiacSkyView.as` — optional Lambert projection source of truth.
 - NAAP lab: https://astro.unl.edu/naap/motion3/motion3.html

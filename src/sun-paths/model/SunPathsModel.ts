@@ -5,8 +5,8 @@
  *
  * State
  * ─────
- *  - `dayOfYearProperty`  — decimal day-of-year; integer part = calendar day
- *    (Jan 1 00:00 UT = 1.0); fractional part = local mean time / 24.
+ *  - `dayOfYearProperty`  — decimal day-of-year; Flash 0-based (Jan 1 00:00 = 0.0);
+ *    fractional part = local mean time / 24; year wraps with `% 365`.
  *  - `latitudeProperty`   — observer latitude in degrees (+N).
  *  - Six display-toggle BooleanProperties.
  *  - `loopDayProperty`    — when true, animation wraps within the same day.

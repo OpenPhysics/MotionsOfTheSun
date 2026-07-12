@@ -1,19 +1,37 @@
 # Port NAAP "Motions of the Sun" to SceneryStack — Phased Implementation Plan
 
+> **Status (2026):** Phases 0–8 are **complete**. This file is a historical execution log for
+> lesser-LLM step runners. For current architecture, formulas, and Flash parity, prefer
+> [`implementation-notes.md`](./implementation-notes.md), [`model.md`](./model.md), and
+> [`parity-report.md`](./parity-report.md).
+>
+> **Provenance correction:** the lab Zodiac embed (`zodiac.swf`) is the **geocentric**
+> ZodiacViewer family (`zodiac016` / `zodiac017`), **not** `zodiacSimulator`. The shipped
+> default is `GeocentricZodiacNode`; Lambert sky from `zodiacSimulator` is an optional mode.
+> Early plan text below that maps `zodiac.swf` → `zodiacSimulator` or describes Phase 8 as a
+> simplified top-down diagram is **superseded**.
+
 ## Context
 
-This repo is a three-screen SceneryStack scaffold (placeholder label + Reset All per screen) that must become a full port of the NAAP *Motions of the Sun* lab (`astroUNL/naap/motion3`). The plan below is written to be executed **step by step by lesser LLMs**: each step is self-contained, names exact input files (in `NAAP/` or the donor repos) and output files, restates the formulas to transcribe, and ends with a verifiable gate. Steps assume no memory of previous sessions beyond what is in the repo.
+This plan was written when the repo was a three-screen SceneryStack scaffold (placeholder
+label + Reset All per screen) that needed to become a full port of the NAAP *Motions of the
+Sun* lab (`astroUNL/naap/motion3`). Steps below remain useful as an audit trail; each named
+input/output files, formulas, and gates.
 
 Key facts established by exploration:
 
 - **Sun Paths** (`sunmotions.swf`): no ActionScript source exists (timeline-scripted `.fla` only; the lab ships `sunMotions068`). But CCNMTL's finished JS rewrite exists at `NAAP/astro-simulations/sun-motion-simulator/` — its `src/utils.js` contains all the solar math, and `/home/veillette/OpenPhysics/RotatingSky/session-ses_0f39.md` is an 872-line architecture analysis of it.
 - **Sidereal & Solar Time**: clean AS3 sources exist at `NAAP/flash-animations/flashdev2/siderealSolarTime/*.as` (`TimeMaster.as`, `OrbitView.as`, `AnalogClock.as`, `AnalogClockHand.as`, `DayOfYearSlider.as`, `Main.as`). Direct transcription.
-- **Zodiac**: the richer `zodiacSimulator` has full AS3 sources (`Main.as`, `ZodiacSkyView.as` — Lambert azimuthal projection, `constellationsData.as`). The simpler `zodiac017` lab demo ("Earth at the center") has no sources and is deferred to an optional final phase after decompilation.
+- **Zodiac:** lab `zodiac.swf` = ZodiacViewer / `zodiac016` family (geocentric sphere; `017`
+  drops the rotational axis). Richer optional Lambert sky: `zodiacSimulator` AS3
+  (`Main.as`, `ZodiacSkyView.as`, `constellationsData.as`). **Shipped:** geocentric default +
+  optional Lambert (see status banner above — early plan order was reversed).
 - **Donor repos** (same `scenerystack ^3.0.0`, copy freely): `/home/veillette/OpenPhysics/RotatingSky` (RS) — completed motion2 port with the whole sky-projection/rendering stack; `/home/veillette/OpenPhysics/SolarSystemModels` (SSM) — zodiac strip + constellation vector data.
 
-### User decisions (fixed — do not revisit)
+### User decisions (historical — see status banner for Zodiac correction)
 
-1. **Zodiac screen** ports `zodiacSimulator` first; `zodiac017`'s Earth-centered view is a later optional mode (Phase 8).
+1. **~~Zodiac screen ports `zodiacSimulator` first; `zodiac017` later (Phase 8).~~**
+   **Superseded:** lab primary is geocentric ZodiacViewer; Lambert is optional.
 2. **Controls** are idiomatic SceneryStack (NumberControl / HSlider / TimeControlNode / buttons) in the main phases, keeping the direct manipulations (draggable Sun on the sky, draggable Earth in the orbit view). Replica widgets (draggable analog-clock hands, calendar strip, Earth-map latitude picker) are separate polish phases at the end (Phase 7).
 
 ### Resolved design decisions
@@ -470,15 +488,20 @@ Land outlines come from the NAAP `Globe.as` `_shoreData` low-res polygons, trans
 
 ---
 
-# PHASE 8 — Optional: zodiac017 "Earth at the center" mode
+# PHASE 8 — Geocentric ZodiacViewer mode (lab `zodiac.swf`)
+
+> **Outcome:** implemented as full `GeocentricZodiacNode` (sphere + Flash stick figures + band
+> masks + `zodiac016` rotational axis), not the simplified top-down diagram sketched below.
+> Default view mode is `"earthCentered"`. See `doc/implementation-notes.md`.
 
 ## Step 8.1 — Decompile and analyze
-Run `npm run decompile -- --setup` (once, needs Java), then `npm run decompile` — `zodiac/zodiac017.swf` is in the default target set (`scripts/decompile-flash.ts` `MOS_TARGETS`); output → `NAAP/decompiled/zodiac017/scripts/`. Read the decompiled AS and append a "zodiac017" findings section (scene layout, math, controls) to `doc/implementation-notes.md`. No sim code changes.
+Run `npm run decompile -- --setup` (once, needs Java), then `npm run decompile` — `zodiac/zodiac017.swf` is in the default target set (`scripts/decompile-flash.ts` `MOS_TARGETS`); output → `NAAP/decompiled/zodiac017/scripts/`. Read the decompiled AS and append findings to `doc/implementation-notes.md`. Also consult `zodiac016` for the rotational axis. No sim code changes in the original step.
 **Gate:** decompiled sources exist; `npm run check` still passes.
 
-## Step 8.2 — Earth-centered mode
-**Create:** `src/zodiac/view/EarthCenteredZodiacNode.ts` (Earth at center, constellation ring at fixed ecliptic longitudes from `ZodiacConstellationsData`, Sun on a circle at `sunLongitude`, sight-line Earth→Sun→sign); **modify** `ZodiacModel.ts` (`viewModeProperty: Property<"sky" | "earthCentered">`), `ZodiacScreenView.ts` (RectangularRadioButtonGroup toggle), strings ×3, summary pattern.
-**Gate:** full gate + visual: the sight-line's sign matches the sky view's strip marker for several dates.
+## Step 8.2 — Earth-centered / geocentric mode
+**Shipped:** `src/zodiac/view/GeocentricZodiacNode.ts` (+ `geocentricZodiacMath.ts`, `ZodiacFlashConstellationsData.ts`, `zodiacBandGraphics.ts`); `ZodiacModel.viewModeProperty` (`"earthCentered"` default | `"sky"`); toggle in `ZodiacScreenView`.
+**(Historical sketch, superseded):** a flat `EarthCenteredZodiacNode` top-down diagram was an interim idea and was not kept.
+**Gate:** full gate + visual: Sun sign matches strip for several dates; band/axis match Flash.
 
 ---
 
@@ -497,7 +520,8 @@ After each phase-final step: `npm run check && npm run lint && npm run build && 
 
 - `NAAP/flash-animations/flashdev2/siderealSolarTime/TimeMaster.as` — screen 2 model source of truth
 - `NAAP/astro-simulations/sun-motion-simulator/src/utils.js` — all Sun Paths math
-- `NAAP/flash-animations/flashdev2/zodiacSimulator/ZodiacSkyView.as` — zodiac projection/rendering source of truth
+- `NAAP/flash-animations/flashdev2/zodiacSimulator/ZodiacSkyView.as` — optional Lambert sky source of truth
+- ZodiacViewer / lab `zodiac.swf` (`zodiac016`/`017`) — geocentric Explorer source of truth
 - `/home/veillette/OpenPhysics/RotatingSky/src/common/SkyProjection.ts` (+ `SkyCoordinates.ts`, `skyGraphics.ts` cluster) — donor rendering engine
 - `/home/veillette/OpenPhysics/RotatingSky/session-ses_0f39.md` — CCNMTL sun-motion-simulator architecture analysis
 - `src/i18n/StringManager.ts` — locale-parity choke point touched in every phase

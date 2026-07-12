@@ -10,9 +10,10 @@
  * Each point → `equatorialToHorizonVector(raHours, decDeg, lat, lst)` → projected.
  * The far half is drawn dashed.
  *
- * Month labels: for i = 0…11, day = MONTH_START_DOY[i]+1 gives the Sun's
- * approximate position for that calendar month. The label is placed at that
- * projected position, nudged ~8 px radially outward from the dome center.
+ * Month labels: for i = 0…11, day = MONTH_START_DOY[i] (Flash 0-based DOY at
+ * month start) gives the Sun's approximate position for that calendar month.
+ * The label is placed at that projected position, nudged ~8 px radially
+ * outward from the dome center.
  */
 
 import { Multilink } from "scenerystack/axon";
@@ -118,7 +119,7 @@ export class EclipticOnHorizonNode extends Node {
       const lat = model.latitudeProperty.value;
       const lst = model.siderealTimeHoursProperty.value;
       for (let i = 0; i < 12; i++) {
-        const doy = (MONTH_START_DOY[i] ?? 0) + 1;
+        const doy = MONTH_START_DOY[i] ?? 0;
         const { raHours, decDeg } = getSunPosition(doy);
         const v = equatorialToHorizonVector(raHours, decDeg, lat, lst);
         const { point, depth } = projection.projectWithDepth(v);

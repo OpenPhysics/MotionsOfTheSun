@@ -46,7 +46,8 @@ import type { SunPathsModel } from "../model/SunPathsModel.js";
 import { CalendarStripNode } from "./CalendarStripNode.js";
 import { SunClockNode } from "./SunClockNode.js";
 
-const DAY_RANGE = new Range(1, 365);
+/** Flash 0-based integer DOY (Jan 1 = 0 … Dec 31 = 364). */
+const DAY_RANGE = new Range(0, 364);
 const TIME_RANGE = new Range(0, 24);
 
 /** Map 0-based DOY offset to month index 0–11. */
@@ -124,12 +125,12 @@ export class SunPathsControlPanel {
       accessibleName: controls.latitudeStringProperty,
     });
 
-    // ── Day-of-year control ─────────────────────────────────────────────────
-    const dayProperty = new NumberProperty(Math.max(1, Math.floor(DEFAULT_DAY_OF_YEAR)), { range: DAY_RANGE });
+    // ── Day-of-year control (Flash 0-based integer DOY) ─────────────────────
+    const dayProperty = new NumberProperty(Math.max(0, Math.floor(DEFAULT_DAY_OF_YEAR)), { range: DAY_RANGE });
 
     // Bidirectional sync: integer part of dayOfYear ↔ dayProperty
     model.dayOfYearProperty.link((day) => {
-      const newInt = Math.max(1, Math.min(365, Math.floor(day)));
+      const newInt = Math.max(0, Math.min(364, Math.floor(day)));
       if (dayProperty.value !== newInt) {
         dayProperty.value = newInt;
       }
@@ -144,7 +145,7 @@ export class SunPathsControlPanel {
 
     // Month-Day subtitle: reads string property values each time dayOfYear changes.
     const monthDayProperty = new DerivedProperty([model.dayOfYearProperty], (day) => {
-      const doy0 = Math.max(0, Math.floor(day) - 1);
+      const doy0 = Math.max(0, Math.floor(day));
       const mi = findMonthIndex(doy0);
       const dayNum = doy0 - (MONTH_START_DOY[mi] ?? 0) + 1;
       return `${monthSPs[mi]?.value ?? ""} ${dayNum}`;

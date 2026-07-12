@@ -20,8 +20,8 @@ export class SunPathsScreenSummaryContent extends ScreenSummaryContent {
   public constructor(model: SunPathsModel) {
     const a11y = StringManager.getInstance().getSunPathsA11yStrings();
 
-    // Integer day of year for readability (e.g. "147" for May 27).
-    const dayProperty = new DerivedProperty([model.dayOfYearProperty], (day) => Math.max(1, Math.floor(day)));
+    // Integer Flash DOY for readability (e.g. "146" for May 27).
+    const dayProperty = new DerivedProperty([model.dayOfYearProperty], (day) => Math.max(0, Math.floor(day)));
 
     const currentDetails = new PatternStringProperty(
       a11y.currentDetailsStringProperty,

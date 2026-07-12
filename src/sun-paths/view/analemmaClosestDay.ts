@@ -12,9 +12,9 @@ import type { SkyProjection } from "../../common/SkyProjection.js";
 import { getEqnOfTimeHours, getSunPosition } from "../../common/SunEphemeris.js";
 
 /**
- * Return the integer day-of-year (1…365) whose analemma sample at mean clock
- * time `dayFraction · 24` h is nearest to `pointerLocal` (projection parent
- * coords). Prefers front-hemisphere samples when both sides are near.
+ * Return the integer day-of-year (0…364, Flash) whose analemma sample at mean
+ * clock time `dayFraction · 24` h is nearest to `pointerLocal` (projection
+ * parent coords). Prefers front-hemisphere samples when both sides are near.
  */
 export const findClosestAnalemmaDay = (
   pointerLocal: Vector2,
@@ -23,10 +23,10 @@ export const findClosestAnalemmaDay = (
   dayFraction: number,
 ): number => {
   const T = (((dayFraction % 1) + 1) % 1) * 24;
-  let bestDay = 1;
+  let bestDay = 0;
   let bestScore = Number.POSITIVE_INFINITY;
 
-  for (let d = 1; d <= 365; d++) {
+  for (let d = 0; d < 365; d++) {
     const { raHours, decDeg } = getSunPosition(d);
     const eotHours = getEqnOfTimeHours(d);
     const H = T - 12 + eotHours;

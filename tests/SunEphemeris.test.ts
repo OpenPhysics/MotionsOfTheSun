@@ -4,6 +4,8 @@
  * Unit tests for the closed-form solar position engine. These pin down the
  * expected behaviour that view code and derived models rely on.
  *
+ * Day arguments use the Flash / Siedell 0-based DOY convention (Jan 1 = 0).
+ *
  * Test numbering matches the porting-plan §Step 1.1 specification:
  *  1. Equinox position
  *  2. Solstice positions
@@ -27,16 +29,26 @@ import {
 
 const DEG: number = Math.PI / 180;
 
+// ── Flash default date parity ────────────────────────────────────────────────
+
+describe("getSunPosition — Flash default May 27 noon (day 146.5)", () => {
+  it("matches Solar Position Functions.as / Simulation Master default", () => {
+    const { raHours, decDeg } = getSunPosition(146.5);
+    expect(raHours).toBeCloseTo(4.316966, 5);
+    expect(decDeg).toBeCloseTo(21.41298, 4);
+  });
+});
+
 // ── Test 1: Equinox ──────────────────────────────────────────────────────────
 
-describe("getSunPosition — equinox (day 79.9)", () => {
+describe("getSunPosition — equinox (day 78.9)", () => {
   it("has |dec| < 1° near the vernal equinox", () => {
-    const { decDeg } = getSunPosition(79.9);
+    const { decDeg } = getSunPosition(78.9);
     expect(Math.abs(decDeg)).toBeLessThan(1);
   });
 
   it("has RA within 0.5 h of 0h / 24h near the vernal equinox", () => {
-    const { raHours } = getSunPosition(79.9);
+    const { raHours } = getSunPosition(78.9);
     // raHours is in [0, 24); check distance from 0 (≡ 24)
     const distFrom0 = Math.min(raHours, 24 - raHours);
     expect(distFrom0).toBeLessThan(0.5);
@@ -45,29 +57,29 @@ describe("getSunPosition — equinox (day 79.9)", () => {
 
 // ── Test 2: Solstices ────────────────────────────────────────────────────────
 
-describe("getSunPosition — summer solstice (day 172)", () => {
+describe("getSunPosition — summer solstice (day 171)", () => {
   it("has dec ≈ +23.44° ± 0.5", () => {
-    const { decDeg } = getSunPosition(172);
+    const { decDeg } = getSunPosition(171);
     expect(decDeg).toBeGreaterThan(23.44 - 0.5);
     expect(decDeg).toBeLessThan(23.44 + 0.5);
   });
 
   it("has RA ≈ 6h ± 0.4", () => {
-    const { raHours } = getSunPosition(172);
+    const { raHours } = getSunPosition(171);
     expect(raHours).toBeGreaterThan(6 - 0.4);
     expect(raHours).toBeLessThan(6 + 0.4);
   });
 });
 
-describe("getSunPosition — winter solstice (day 355.5)", () => {
+describe("getSunPosition — winter solstice (day 354.5)", () => {
   it("has dec ≈ −23.44° ± 0.5", () => {
-    const { decDeg } = getSunPosition(355.5);
+    const { decDeg } = getSunPosition(354.5);
     expect(decDeg).toBeGreaterThan(-23.44 - 0.5);
     expect(decDeg).toBeLessThan(-23.44 + 0.5);
   });
 
   it("has RA ≈ 18h ± 0.4", () => {
-    const { raHours } = getSunPosition(355.5);
+    const { raHours } = getSunPosition(354.5);
     expect(raHours).toBeGreaterThan(18 - 0.4);
     expect(raHours).toBeLessThan(18 + 0.4);
   });
@@ -76,26 +88,26 @@ describe("getSunPosition — winter solstice (day 355.5)", () => {
 // ── Test 3: Equation of time extrema and zero crossing ───────────────────────
 
 describe("getEqnOfTimeMinutes — extrema and zero crossing", () => {
-  it("early November (day 307): |EoT| ∈ [14, 18] min", () => {
-    const eot = getEqnOfTimeMinutes(307);
+  it("early November (day 306): |EoT| ∈ [14, 18] min", () => {
+    const eot = getEqnOfTimeMinutes(306);
     expect(Math.abs(eot)).toBeGreaterThan(14);
     expect(Math.abs(eot)).toBeLessThan(18);
   });
 
-  it("mid February (day 42): |EoT| ∈ [12, 16] min", () => {
-    const eot = getEqnOfTimeMinutes(42);
+  it("mid February (day 41): |EoT| ∈ [12, 16] min", () => {
+    const eot = getEqnOfTimeMinutes(41);
     expect(Math.abs(eot)).toBeGreaterThan(12);
     expect(Math.abs(eot)).toBeLessThan(16);
   });
 
   it("November and February peaks have opposite signs", () => {
-    const novEot = getEqnOfTimeMinutes(307);
-    const febEot = getEqnOfTimeMinutes(42);
+    const novEot = getEqnOfTimeMinutes(306);
+    const febEot = getEqnOfTimeMinutes(41);
     expect(novEot * febEot).toBeLessThan(0);
   });
 
-  it("mid April (day 106): |EoT| < 2 min (zero crossing)", () => {
-    const eot = getEqnOfTimeMinutes(106);
+  it("mid April (day 105): |EoT| < 2 min (zero crossing)", () => {
+    const eot = getEqnOfTimeMinutes(105);
     expect(Math.abs(eot)).toBeLessThan(2);
   });
 });
@@ -103,7 +115,7 @@ describe("getEqnOfTimeMinutes — extrema and zero crossing", () => {
 // ── Test 4: Sidereal drift ───────────────────────────────────────────────────
 
 describe("getSiderealTimeHours — daily drift", () => {
-  const days = [1, 50, 150, 200, 300];
+  const days = [0, 50, 150, 200, 300];
   for (const d of days) {
     it(`sidereal advances ≈ 0.0658 h over one solar day at day ${d}`, () => {
       const h0 = getSiderealTimeHours(d);
@@ -119,10 +131,10 @@ describe("getSiderealTimeHours — daily drift", () => {
 // ── Test 5: Transit altitude identity ────────────────────────────────────────
 
 describe("getSolarAltitudeRad — transit altitude identity", () => {
-  it("at H = 0 (transit), alt ≈ 90° − |lat − dec| (lat 40.8°, day 147.5)", () => {
-    // day 147.5 ≈ May 27 noon; default latitude 40.8° N
+  it("at H = 0 (transit), alt ≈ 90° − |lat − dec| (lat 40.8°, day 146.5)", () => {
+    // day 146.5 = May 27 noon (Flash); default latitude 40.8° N
     const lat = 40.8 * DEG;
-    const { decDeg } = getSunPosition(147.5);
+    const { decDeg } = getSunPosition(146.5);
     const dec = decDeg * DEG;
     const altRad = getSolarAltitudeRad(lat, dec, 0); // H = 0 at transit
     const altDeg = (180 / Math.PI) * altRad;

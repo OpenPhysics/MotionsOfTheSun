@@ -32,13 +32,13 @@ const motionsOfTheSunQueryParameters = QueryStringMachine.getAll({
   },
 
   /**
-   * Starting day of year for the Sun Paths screen (1 = Jan 1, 365 = Dec 31).
-   * Example: `?day=355` starts near the December solstice.
+   * Starting day of year for the Sun Paths screen (Flash 0-based: 0 = Jan 1,
+   * 146.5 = May 27 noon, 364.x = Dec 31). Example: `?day=354.5` ≈ Dec solstice noon.
    */
   day: {
     type: "number",
     defaultValue: DEFAULT_DAY_OF_YEAR,
-    isValidValue: (value: number) => value >= 0 && value <= 366,
+    isValidValue: (value: number) => value >= 0 && value < 366,
     public: true,
   },
 });

@@ -13,7 +13,7 @@ import { SunPathsModel } from "../src/sun-paths/model/SunPathsModel.js";
 const ONE_DAY_SECONDS: number = 1 / STEP_DAYS_PER_SECOND;
 
 describe("SunPathsModel", () => {
-  it("initial altitude ≈ 70.5° at default noon (day 147.5, lat 40.8°)", () => {
+  it("initial altitude ≈ 70.5° at default noon (day 146.5, lat 40.8°)", () => {
     const model = new SunPathsModel();
     expect(model.dayOfYearProperty.value).toBeCloseTo(DEFAULT_DAY_OF_YEAR, 5);
     expect(model.latitudeProperty.value).toBeCloseTo(DEFAULT_LATITUDE, 5);
@@ -31,7 +31,7 @@ describe("SunPathsModel", () => {
     expect(az).toBeLessThan(183);
   });
 
-  it("initial declination ≈ 21.3° at day 147.5", () => {
+  it("initial declination ≈ 21.3° at day 146.5", () => {
     const model = new SunPathsModel();
     const dec = model.sunDecDegProperty.value;
     expect(dec).toBeGreaterThan(20.6);
@@ -90,7 +90,7 @@ describe("SunPathsModel", () => {
     model.animationModeProperty.value = "stepByDay";
     model.timer.isPlayingProperty.value = true;
 
-    const initial = model.dayOfYearProperty.value; // 147.5
+    const initial = model.dayOfYearProperty.value; // 146.5
     const initialFrac = initial % 1; // 0.5 (noon)
     model.step(ONE_DAY_SECONDS); // accrues exactly one whole day
     expect(model.dayOfYearProperty.value).toBeCloseTo(initial + 1, 6);
@@ -125,7 +125,7 @@ describe("SunPathsModel", () => {
 
   it("reset restores default values", () => {
     const model = new SunPathsModel();
-    model.dayOfYearProperty.value = 1;
+    model.dayOfYearProperty.value = 0;
     model.latitudeProperty.value = -33;
     model.loopDayProperty.value = true;
     model.animationModeProperty.value = "stepByDay";
@@ -135,6 +135,18 @@ describe("SunPathsModel", () => {
     expect(model.latitudeProperty.value).toBeCloseTo(DEFAULT_LATITUDE, 5);
     expect(model.loopDayProperty.value).toBe(false);
     expect(model.animationModeProperty.value).toBe("continuous");
+  });
+
+  it("year wrap uses Flash % 365 (not 365.25)", () => {
+    const model = new SunPathsModel();
+    model.dayOfYearProperty.value = 364.75;
+    model.advanceSiderealTime(0); // no-op path; use continuous step instead
+    model.timer.isPlayingProperty.value = true;
+    // 6 real seconds at NORMAL = 18 h = 0.75 days → wraps past 365 → ~0.5
+    model.step(6.0);
+    expect(model.dayOfYearProperty.value).toBeGreaterThanOrEqual(0);
+    expect(model.dayOfYearProperty.value).toBeLessThan(365);
+    expect(model.dayOfYearProperty.value).toBeCloseTo(0.5, 5);
   });
 
   it("sunDragMode defaults to timeOfDay, enables analemma in dayOfYear, and resets", () => {

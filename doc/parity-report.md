@@ -7,20 +7,19 @@ screen by screen, and records which original features are present, which the por
 top, and the few genuine gaps.
 
 ## Reference sources
-| Screen | Flash original (decompiled) | AS3 source | JS reference |
+| Screen | Lab SWF | Flash / AS reference | JS reference |
 |---|---|---|---|
-| Sun Paths | `NAAP/decompiled/sunMotions068-C` | — | `NAAP/astro-simulations/sun-motion-simulator` (React/WebGL) |
-| Sidereal & Solar Time | `NAAP/decompiled/siderealSolarTime` | `NAAP/flash-animations/flashdev2/siderealSolarTime` | *(none — Flash only)* |
-| Zodiac | `NAAP/decompiled/zodiac017` | `NAAP/flash-animations/flashdev2/zodiacSimulator` | *(none — Flash only)* |
+| Sun Paths | `sunmotions.swf` (= `sunMotions068`) | `NAAP/decompiled/sunMotions068-C` (close sibling) | `NAAP/astro-simulations/sun-motion-simulator` (React/WebGL) |
+| Sidereal & Solar Time | `siderealSolarTime.swf` | AS3 `flashdev2/siderealSolarTime` + decompile | *(none — Flash only)* |
+| Zodiac | `zodiac.swf` (ZodiacViewer / `zodiac016` family) | Decompiled `zodiac017` (+ `zodiac016` for axis); optional Lambert from `zodiacSimulator` | *(none — Flash only)* |
 
 Only Sun Paths has a modern JS reimplementation; it mirrors the Flash lab ~1:1 (the Flash
 Info panel additionally shows **hour angle**). Sidereal and Zodiac parity is judged against
-the ActionScript.
+the ActionScript / lab SWFs.
 
 **Verdict: the port is at feature parity on all three screens** for the Flash lab behaviours
-that matter pedagogically. Remaining differences are intentional simplifications (zodiac017
-earth-centered view is a top-down diagram, not a full celestial sphere) or SceneryStack
-control idioms.
+that matter pedagogically. Remaining differences are intentional (strip / continuous play
+additions; SceneryStack control idioms) or small ephemeris indexing offsets on Sun Paths.
 
 ---
 
@@ -44,6 +43,13 @@ control idioms.
 
 **Port adds:** color/projector profiles, PWA, i18n, full keyboard nav + screen-reader summaries,
 `?latitude` / `?day` query params.
+
+**Day index / year wrap:** aligned with Flash — 0-based DOY (`146.5` = May 27 noon) into the
+Siedell/Flash Fourier coeffs, year wrap `% 365` (`DAY_OF_YEAR_RANGE = [0, 365)`). (CCNMTL's JS
+rewrite used 1-based `Date` DOY; same coeffs with `147.5` would shift RA/dec by ~0.07 h / ~0.16°.)
+
+**Renderer:** Flash 3D `CelestialSphere` (NCP/SCP, altitude-linked sky shading, meridian circles)
+vs port orthographic horizon dome from RotatingSky — intentional (D5).
 
 ---
 
@@ -72,30 +78,37 @@ color/projector profiles, PWA, i18n, full keyboard nav + screen-reader summaries
 
 ## Screen 3 — Zodiac
 
-| Original feature (`zodiacSimulator` AS3 / `zodiac017`) | Port | Location |
-|---|---|---|
-| Lambert azimuthal equal-area sky view at fixed 41° N looking south | ✅ | `ZodiacSkyNode`, `lambertProjection` |
-| Sky/ground gradient + twilight shading by Sun altitude | ✅ | `ZodiacSkyNode` |
-| Alt/az grid, celestial equator, ecliptic curves | ✅ | `ZodiacSkyNode` |
-| 12 zodiac constellations (stick figures + labels) | ✅ | `ZodiacConstellationsNode`, `ZodiacConstellationsData` |
-| Label toggles (constellation / ecliptic / equator) — Flash has these too | ✅ | `ZodiacScreenView` |
-| Sun disc on the ecliptic | ✅ | `ZodiacSkyNode` |
-| Time buttons: −2h/+2h, −6h/+6h, −1 month/+1 month | ✅ (6) | `ZodiacScreenView` |
-| Day-of-year slider + month-day readout | ✅ | `ZodiacScreenView` |
-| Earth-centered (zodiac017) mode | ✅ simplified top-down diagram | `EarthCenteredZodiacNode` |
+Lab primary = geocentric ZodiacViewer (`zodiac.swf` / `zodiac016`). Optional mode = Lambert
+sky from `zodiacSimulator`.
 
-**Port adds:** the **zodiac sun-strip** panorama (D8), continuous play/pause, color/projector
-profiles, PWA, i18n, screen-reader summaries.
+| Original feature | Port | Location |
+|---|---|---|
+| Geocentric celestial sphere, Earth at center, Sun on ecliptic rim | ✅ | `GeocentricZodiacNode` |
+| Drag-to-rotate camera (θ default 206°, φ ≤ 50°) | ✅ | `GeocentricZodiacNode`, `attachSkyCameraInteraction` |
+| 12 Flash stick-figure constellations + labels | ✅ | `ZodiacFlashConstellationsData`, `GeocentricZodiacNode` |
+| ±24° zodiac-band day/night gradient masks | ✅ | `zodiacBandGraphics.ts` |
+| Earth's rotational axis (NCP–SCP; present in `zodiac016`) | ✅ | `GeocentricZodiacNode` |
+| Day-of-year slider + month-day readout | ✅ | `ZodiacScreenView` |
+| Uniform solar motion `az = −360/365 × (doy + 10.8)` | ✅ | `geocentricZodiacMath.ts` |
+| Optional: Lambert sky at 41° N looking south (`zodiacSimulator`) | ✅ | `ZodiacSkyNode`, `lambertProjection` |
+| Optional: sky/ground gradient + twilight | ✅ | `ZodiacSkyNode` |
+| Optional: alt/az grid, celestial equator, ecliptic | ✅ | `ZodiacSkyNode` |
+| Optional: SSM polyline constellations on Lambert sky | ✅ | `ZodiacConstellationsNode` |
+| Label toggles (constellation / ecliptic / equator) | ✅ | `ZodiacScreenView` |
+| Time buttons: −2h/+2h, −6h/+6h, −1 month/+1 month | ✅ (6) | `ZodiacScreenView` |
+
+**Port adds:** the **zodiac sun-strip** panorama (D8), continuous play/pause, view-mode toggle,
+color/projector profiles, PWA, i18n, screen-reader summaries.
 
 ---
 
 ## Remaining intentional differences
-1. **Earth-centered Zodiac** is a top-down ecliptic diagram, not the full 3D celestial-sphere
-   renderer from `zodiac017` (documented in `implementation-notes.md`).
-2. **Latitude N/S hemisphere click** — port uses a signed NumberControl (−90…90) instead of
-   absolute degrees + N/S toggle; the world map covers the same interaction.
-3. **SceneryStack control chrome** — NumberControl / RectangularRadioButtonGroup instead of
-   Flash Component UI widgets.
+1. **Zodiac strip + continuous play** — not in the lab SWFs; pedagogical additions.
+2. **Sun Paths renderer** — Flash 3D `CelestialSphere` vs RotatingSky orthographic horizon dome (D5).
+3. **Latitude N/S hemisphere click** (Sun Paths) — port uses a signed NumberControl (−90…90)
+   instead of absolute degrees + N/S toggle; the world map covers the same interaction.
+4. **SceneryStack control chrome** — NumberControl / RectangularRadioButtonGroup instead of
+   Flash Component UI widgets; Sun Paths speed is SLOW/NORMAL/FAST rather than a continuous slider.
 
 ## Contrast note (default / projector profiles)
 Light control surfaces (clock faces, calendar strip) always use dark ink
