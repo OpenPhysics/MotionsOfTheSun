@@ -13,7 +13,8 @@
  * then `addChild` them so they layer above the face and ticks.
  */
 
-import { Circle, Line, Node, type NodeOptions, type TPaint } from "scenerystack/scenery";
+import { Circle, Line, Node, type NodeOptions, Text, type TPaint } from "scenerystack/scenery";
+import { PhetFont } from "scenerystack/scenery-phet";
 import { dialPoint } from "./clockGeometry.js";
 
 export type ClockTickConfig = {
@@ -30,6 +31,26 @@ export type ClockTickConfig = {
   majorLineWidth: number;
 };
 
+/**
+ * Ring of hour numerals drawn on the dial. Numeral `index` (0 = top, clockwise)
+ * is centered at `radiusFraction · radius`; every `majorEvery`-th numeral is
+ * drawn bold and at `majorFontSize`, the rest at `minorFontSize`.
+ */
+export type ClockNumeralConfig = {
+  /** Number of evenly-spaced numerals (usually matches `ticks.count`). */
+  count: number;
+  /** Text for the numeral at each index (0 = top, clockwise). */
+  labelForIndex: (index: number) => string;
+  /** Radius fraction at which numerals are centered. */
+  radiusFraction: number;
+  /** Every Nth numeral (0, majorEvery, …) is drawn bold and larger. */
+  majorEvery: number;
+  majorFontSize: number;
+  minorFontSize: number;
+  /** Numeral fill; defaults to `markColor`. */
+  fill?: TPaint;
+};
+
 export type ClockNodeOptions = {
   radius: number;
   faceFill: TPaint;
@@ -39,6 +60,8 @@ export type ClockNodeOptions = {
   markColor: TPaint;
   hubRadius?: number;
   ticks: ClockTickConfig;
+  /** Optional ring of hour numerals drawn above the ticks, below the hands. */
+  numerals?: ClockNumeralConfig;
 } & NodeOptions;
 
 export class ClockNode extends Node {
@@ -55,6 +78,7 @@ export class ClockNode extends Node {
       markColor,
       hubRadius = 3.5,
       ticks,
+      numerals,
       ...nodeOptions
     } = options;
 
@@ -73,7 +97,28 @@ export class ClockNode extends Node {
       );
     }
 
-    super({ ...nodeOptions, children: [face, tickNode] });
+    const children: Node[] = [face, tickNode];
+
+    if (numerals) {
+      const numeralNode = new Node({ pickable: false });
+      const numeralFill = numerals.fill ?? markColor;
+      for (let i = 0; i < numerals.count; i++) {
+        const major = i % numerals.majorEvery === 0;
+        numeralNode.addChild(
+          new Text(numerals.labelForIndex(i), {
+            font: new PhetFont({
+              size: major ? numerals.majorFontSize : numerals.minorFontSize,
+              weight: major ? "bold" : "normal",
+            }),
+            fill: numeralFill,
+            center: dialPoint(i, radius * numerals.radiusFraction, numerals.count),
+          }),
+        );
+      }
+      children.push(numeralNode);
+    }
+
+    super({ ...nodeOptions, children });
 
     this.radius = radius;
     this.markColor = markColor;

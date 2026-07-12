@@ -212,10 +212,16 @@ const MotionsOfTheSunColors = {
     projector: "#888888",
   }),
 
-  /** Earth globe fill in screen 2. */
+  /** Earth globe ocean fill in screen 2. */
   earthFillColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "earthFill", {
     default: "#4a7abf",
     projector: "#2c5aa0",
+  }),
+
+  /** Earth globe continent (land) fill in screen 2. */
+  earthLandColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "earthLand", {
+    default: "#5a9e56",
+    projector: "#3d7a3a",
   }),
 
   // ── Sun Paths world map (equirectangular latitude picker) ────────────────────

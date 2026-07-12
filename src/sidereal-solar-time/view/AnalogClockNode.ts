@@ -27,7 +27,7 @@ import type { TReadOnlyProperty } from "scenerystack/axon";
 import { DragListener, KeyboardListener, Line, Node, Text, type TPaint } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { ClockNode } from "../../common/view/ClockNode.js";
-import { normalizeDeltaDegrees, pointerToClockDegrees } from "../../common/view/clockGeometry.js";
+import { dialPoint, normalizeDeltaDegrees, pointerToClockDegrees } from "../../common/view/clockGeometry.js";
 import MotionsOfTheSunColors from "../../MotionsOfTheSunColors.js";
 import { ANALOG_CLOCK_RADIUS, CONTROL_FONT_SIZE } from "../../MotionsOfTheSunConstants.js";
 
@@ -140,27 +140,37 @@ export class AnalogClockNode extends ClockNode {
       faceLineWidth: 2,
       markColor: ink,
       hubRadius: 3.5,
+      // 24-hour dial matching the Sun Paths clock: 0 (midnight) at the top,
+      // 12 (noon) at the bottom, hour hand one revolution per day.
       ticks: {
-        count: 12,
+        count: 24,
         majorEvery: 3,
-        minorInnerFraction: 0.86,
-        majorInnerFraction: 0.78,
-        outerFraction: 0.94,
-        minorLineWidth: 1,
-        majorLineWidth: 2,
+        minorInnerFraction: 0.9,
+        majorInnerFraction: 0.86,
+        outerFraction: 0.96,
+        minorLineWidth: 0.75,
+        majorLineWidth: 1.5,
+      },
+      numerals: {
+        count: 24,
+        labelForIndex: (h) => String(h),
+        radiusFraction: 0.72,
+        majorEvery: 3,
+        majorFontSize: 7,
+        minorFontSize: 5.5,
       },
       tagName: "div",
       accessibleName: options.accessibleNameProperty,
       accessibleHelpText: options.accessibleHelpTextProperty,
     });
 
-    const hourHand = new AnalogClockHandNode("hour", r * 0.55, 3.5, ink, (deltaDeg) => {
+    const hourHand = new AnalogClockHandNode("hour", r * 0.5, 3, ink, (deltaDeg) => {
       options.onHandsDragged(deltaDeg / 360);
     });
     const minuteHand = new AnalogClockHandNode(
       "minute",
-      r * 0.78,
-      2,
+      r * 0.68,
+      1.75,
       MotionsOfTheSunColors.clockHandColorProperty,
       (deltaDeg) => {
         options.onHandsDragged(deltaDeg / (360 * 24));
@@ -174,22 +184,26 @@ export class AnalogClockNode extends ClockNode {
     this.addChild(hub);
 
     if (options.showAmPmLabels && options.amStringProperty && options.pmStringProperty) {
-      const amLabel = new Text(options.amStringProperty, {
-        font: new PhetFont(CONTROL_FONT_SIZE - 2),
-        fill: ink,
-        centerX: -r * 0.45,
-        centerY: r * 0.35,
-        maxWidth: r * 0.6,
-      });
-      const pmLabel = new Text(options.pmStringProperty, {
-        font: new PhetFont(CONTROL_FONT_SIZE - 2),
-        fill: ink,
-        centerX: r * 0.45,
-        centerY: r * 0.35,
-        maxWidth: r * 0.6,
-      });
-      this.addChild(amLabel);
-      this.addChild(pmLabel);
+      // "12 am / 6 am / 12 pm / 6 pm" helper labels inside the numeral ring, at
+      // the midnight / 6am / noon / 6pm hour positions (matching the Sun Paths clock).
+      const helpers: Array<{ hour: number; prefix: string; ampm: TReadOnlyProperty<string> }> = [
+        { hour: 0, prefix: "12", ampm: options.amStringProperty },
+        { hour: 6, prefix: "6", ampm: options.amStringProperty },
+        { hour: 12, prefix: "12", ampm: options.pmStringProperty },
+        { hour: 18, prefix: "6", ampm: options.pmStringProperty },
+      ];
+      for (const helper of helpers) {
+        const prefixText = new Text(`${helper.prefix} `, { font: new PhetFont(5.5), fill: ink });
+        const ampmText = new Text(helper.ampm, {
+          font: new PhetFont(5.5),
+          fill: ink,
+          left: prefixText.right + 1,
+          centerY: prefixText.centerY,
+        });
+        const group = new Node({ children: [prefixText, ampmText], pickable: false });
+        group.center = dialPoint(helper.hour, r * 0.42, 24);
+        this.addChild(group);
+      }
     }
 
     if (options.labelProperty) {

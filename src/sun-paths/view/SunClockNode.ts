@@ -141,25 +141,20 @@ export class SunClockNode extends ClockNode {
         minorLineWidth: 0.75,
         majorLineWidth: 1.5,
       },
+      numerals: {
+        count: HOURS_ON_DIAL,
+        labelForIndex: (h) => String(h),
+        radiusFraction: 0.74,
+        majorEvery: 3,
+        majorFontSize: 9,
+        minorFontSize: 7.5,
+      },
       tagName: "div",
       focusable: true,
       cursor: "pointer",
       accessibleName: options.accessibleNameProperty,
       accessibleHelpText: options.accessibleHelpTextProperty,
     });
-
-    // ── Hour numerals 0–23 ───────────────────────────────────────────────────
-    const numerals = new Node({ pickable: false });
-    for (let h = 0; h < HOURS_ON_DIAL; h++) {
-      const major = h % 3 === 0;
-      numerals.addChild(
-        new Text(String(h), {
-          font: new PhetFont({ size: major ? 9 : 7.5, weight: major ? "bold" : "normal" }),
-          fill: ink,
-          center: dialPoint(h, r * 0.74, HOURS_ON_DIAL),
-        }),
-      );
-    }
 
     // ── "12 am / 6 am / 12 pm / 6 pm" helper labels ───────────────────────────
     const helperLabels = new Node({ pickable: false });
@@ -205,7 +200,6 @@ export class SunClockNode extends ClockNode {
     });
     const hub = this.createHub();
 
-    this.addChild(numerals);
     this.addChild(helperLabels);
     this.addChild(hourHand);
     this.addChild(minuteHand);
