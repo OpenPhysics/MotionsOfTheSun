@@ -161,6 +161,9 @@
     "south": "S",
     "east": "E",
     "west": "O",
+    "eastDirection": "est",
+    "westDirection": "ouest",
+    "sunMarkerLabel": "soleil",
     "skyViewMode": "Vue du ciel",
     "earthCenteredViewMode": "Vue géocentrique",
     "viewMode": "Mode d'affichage"

@@ -317,10 +317,10 @@ const MotionsOfTheSunColors = {
 
   // ── Zodiac strip decorations (from SolarSystemModels donor) ──────────────────
 
-  /** Zodiac strip band background fill. */
+  /** Zodiac strip band background fill (Flash configurations strip is near-white). */
   zodiacBandColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "zodiacBand", {
-    default: "#1e293b",
-    projector: "#e8eaf6",
+    default: "#1a2233",
+    projector: "#f7f7f7",
   }),
 
   /** Zodiac strip outer border stroke. */
@@ -335,10 +335,42 @@ const MotionsOfTheSunColors = {
     projector: "#9999bb",
   }),
 
-  /** Zodiac strip sign-name labels. */
+  /** Zodiac strip sign-name / east-west labels. */
   zodiacLabelColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "zodiacLabel", {
     default: "#aabbcc",
     projector: "#334455",
+  }),
+
+  /** Stick-figure lines on the zodiac strip (Flash normalConstellationColor ≈ 0xB0B0B0). */
+  zodiacStripConstellationLineColorProperty: new ProfileColorProperty(
+    MotionsOfTheSunNamespace,
+    "zodiacStripConstellationLine",
+    {
+      default: "#a8b0bc",
+      projector: "#909090",
+    },
+  ),
+
+  /** Star dots on the zodiac strip. */
+  zodiacStripStarColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "zodiacStripStar", {
+    default: "#d0d6e0",
+    projector: "#333333",
+  }),
+
+  /** Active (Sun's current) constellation highlight on the strip (Flash activeConstellationColor). */
+  zodiacStripActiveConstellationColorProperty: new ProfileColorProperty(
+    MotionsOfTheSunNamespace,
+    "zodiacStripActiveConstellation",
+    {
+      default: "#4fc3f7",
+      projector: "#1565c0",
+    },
+  ),
+
+  /** Vertical sun tick through the zodiac strip (Flash border grey). */
+  zodiacStripTickColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "zodiacStripTick", {
+    default: "#8899aa",
+    projector: "#999999",
   }),
 
   // ── Zodiac sky scene gradients (scene colors; same hex in both profiles) ──────

@@ -64,6 +64,8 @@ All files were copied with global renames:
 
 **Cherry-picked (not copied):** `lonToX` formula and sign order from `ptolemaic/view/PtolemaicZodiacStrip.ts` lines 1–90. The class itself was not copied because it couples to `PtolemaicModel`.
 
+**Strip constellation art:** `ZodiacSunStrip` projects `ECLIPTIC_CONSTELLATIONS` with the Flash configurations strip mapping (`Zodiac Strip.as`: `x = −λ·W/2π`, `y = −β·W/2π` about the midline) — same NAAP data as the configs simulator starfield, without vendoring the bitmap or `ConfigurationsZodiacStrip`.
+
 **Not used:** `ConfigurationsZodiacStrip`, `ZodiacConstellationNode`. These hardcode `STAR_RADIUS = 235` and `LAT_SCALE = 120` magic radii designed for a Ptolemaic orbital layout. The optional Lambert sky mode uses the **Lambert azimuthal equal-area projection** from `zodiacSimulator/ZodiacSkyView.as` (see `doc/model.md`). The default geocentric view uses Flash stick figures (`ZodiacFlashConstellationsData`) on `SkyProjection`.
 
 ### New files (no donor)
@@ -91,7 +93,7 @@ All files were copied with global renames:
 | `zodiac/view/lambertProjection.ts` | Pure projection functions (verbatim from ZodiacSkyView.as) |
 | `zodiac/view/ZodiacSkyNode.ts` | Optional Lambert sky: gradient + grid + equator + ecliptic + Sun |
 | `zodiac/view/ZodiacConstellationsNode.ts` | Lambert-projected constellation polylines + labels |
-| `zodiac/view/ZodiacSunStrip.ts` | Zodiac-strip panorama with Sun marker (TS addition; Flash lacked it) |
+| `zodiac/view/ZodiacSunStrip.ts` | Configurations-style strip: constellation starfield + Sun tick (D8; Flash lab lacked it) |
 | `zodiac/model/geocentricZodiacMath.ts` | Flash ZodiacViewer day→az / λ / globe-spin helpers |
 | `zodiac/model/ZodiacFlashConstellationsData.ts` | Stick-figure star polylines from ZodiacViewer.as |
 | `zodiac/view/GeocentricZodiacNode.ts` | Lab geocentric Zodiac Explorer (`zodiac.swf` / zodiac016) |
@@ -170,7 +172,7 @@ ZodiacScreenView (ScreenView)
   ├─ GeocentricZodiacNode — default when viewMode === "earthCentered" (lab zodiac.swf)
   ├─ ZodiacSkyNode (Node, clipped) — visible when viewMode === "sky"
   ├─ ZodiacConstellationsNode — visible when viewMode === "sky"
-  ├─ ZodiacSunStrip (ZodiacStripBackground + sun marker)
+  ├─ ZodiacSunStrip (constellation starfield + sun tick; configs-sim style)
   ├─ rightColumn (VBox)
   │    ├─ viewModeRadioGroup (RectangularRadioButtonGroup: earthCentered | sky)
   │    ├─ time buttons (−2h/+2h/−6h/+6h/−1mo/+1mo)
@@ -212,7 +214,7 @@ These are fixed and must not be re-derived (full rationale in `doc/porting-plan.
 | D5 | Sun Paths uses horizon-frame `SkyProjection` (not RS `CelestialSphereNode`/`SkyModel` or WebGL). Flash-faithful sky/horizon shade + NCP/SCP axes live in `SkyBowlShadingNode` / `HorizonShadeNode` / `CelestialPoleAxisNode`. Geocentric Zodiac reuses `SkyProjection` + camera drag |
 | D6 | Draggable Sun moves along its declination circle (= controls time of day) |
 | D7 | ~~Screen 2 exposes SIMPLE mode only~~ — **superseded:** Screen 2 now shows a SIMPLE/JULIAN year-length radio bound to `timeMaster.modeProperty`; the day-of-year slider hides in JULIAN mode (matches Flash). See `doc/parity-report.md` |
-| D8 | Zodiac screen adds `ZodiacSunStrip` even though Flash lacked it |
+| D8 | Zodiac screen adds `ZodiacSunStrip` (configurations-sim starfield + Sun) even though Flash lacked it |
 | D9 | `attachSkyCameraInteraction`'s `sky` param narrowed to `{ advanceSiderealTime(hours): void }` |
 
 **Zodiac screen provenance (supersedes early plan D1 for Zodiac):** the lab embed is the **geocentric** ZodiacViewer (`zodiac.swf` ≈ `zodiac016`; decompile default `zodiac017` is the same family without the rotational axis). Default `viewModeProperty = "earthCentered"` → `GeocentricZodiacNode`. Optional `"sky"` → Lambert `zodiacSimulator` view.

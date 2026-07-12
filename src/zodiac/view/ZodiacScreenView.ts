@@ -11,7 +11,7 @@
  *
  * Layout (1024 × 618 virtual canvas):
  *  - GeocentricZodiacNode (default) or ZodiacSkyNode + constellations
- *  - ZodiacSunStrip below the view
+ *  - ZodiacSunStrip below the view (configurations-sim starfield + Sun tick)
  *  - Right-column controls (view mode, time jumps, day slider, labels)
  *  - TimeControlNode + ResetAllButton
  */
@@ -51,11 +51,11 @@ import { ZodiacScreenSummaryContent } from "./ZodiacScreenSummaryContent.js";
 import { ZodiacSkyNode } from "./ZodiacSkyNode.js";
 import { ZodiacSunStrip } from "./ZodiacSunStrip.js";
 
-const GEO_DIAMETER = 520;
+const GEO_DIAMETER = 450;
 const GEO_LEFT = 24;
-const GEO_TOP = 16;
+const GEO_TOP = 8;
 
-const SKY_WIDTH = 520;
+const SKY_WIDTH = 450;
 const SKY_LEFT = GEO_LEFT;
 const SKY_TOP = GEO_TOP;
 
@@ -134,25 +134,26 @@ export class ZodiacScreenView extends ScreenView {
       constellationsNode.visible = !isGeocentric;
     });
 
-    // ── Zodiac strip ──────────────────────────────────────────────────────
-    const signStringProperties = [
-      zodiacStrings.piscesStringProperty,
-      zodiacStrings.aquariusStringProperty,
-      zodiacStrings.capricornStringProperty,
-      zodiacStrings.sagittariusStringProperty,
-      zodiacStrings.scorpiusStringProperty,
-      zodiacStrings.libraStringProperty,
-      zodiacStrings.virgoStringProperty,
-      zodiacStrings.leoStringProperty,
-      zodiacStrings.cancerStringProperty,
-      zodiacStrings.geminiStringProperty,
-      zodiacStrings.taurusStringProperty,
-      zodiacStrings.ariesStringProperty,
-    ] as const;
+    // ── Zodiac strip (configurations-simulator style starfield) ───────────
+    const signLabelMapForStrip = new Map<string, TReadOnlyProperty<string>>();
+    for (const key of SIGN_KEYS) {
+      const prop = signLabelMap.get(key);
+      if (prop) {
+        signLabelMapForStrip.set(key, prop);
+      }
+    }
 
-    const zodiacStrip = new ZodiacSunStrip(signStringProperties, model.sunLongitudeRadProperty);
+    const zodiacStrip = new ZodiacSunStrip(
+      model.sunLongitudeRadProperty,
+      model.sunSignIndexProperty,
+      signLabelMapForStrip,
+      strings.eastDirectionStringProperty,
+      strings.westDirectionStringProperty,
+      strings.sunMarkerLabelStringProperty,
+    );
     zodiacStrip.x = GEO_LEFT + (GEO_DIAMETER - ZODIAC_STRIP_WIDTH) / 2;
-    zodiacStrip.top = GEO_TOP + GEO_DIAMETER + 8;
+    // Position by translation (not `.top`) so the sun tick label above y=0 does not shift the band.
+    zodiacStrip.y = GEO_TOP + GEO_DIAMETER + 28;
     this.addChild(zodiacStrip);
 
     // ── Right-column controls ─────────────────────────────────────────────

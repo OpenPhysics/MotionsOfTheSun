@@ -153,8 +153,8 @@ export const ZODIAC_TWILIGHT_RANGE_DEG = 7;
 /** Width (px) of the zodiac strip at the bottom of the zodiac screen. */
 export const ZODIAC_STRIP_WIDTH = 600;
 
-/** Height (px) of the zodiac strip. */
-export const ZODIAC_STRIP_HEIGHT = 40;
+/** Height (px) of the zodiac strip (Flash configurations strip ≈ 60; room for stick figures). */
+export const ZODIAC_STRIP_HEIGHT = 70;
 
 /**
  * Cumulative day-of-year at the start of each month (Jan–Dec + sentinel).
