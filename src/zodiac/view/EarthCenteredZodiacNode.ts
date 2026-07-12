@@ -91,7 +91,7 @@ export class EarthCenteredZodiacNode extends Node {
 
     const sunDisc = new Circle(10, {
       fill: MotionsOfTheSunColors.sunColorProperty,
-      stroke: "rgba(255,255,255,0.5)",
+      stroke: MotionsOfTheSunColors.sunRimColorProperty,
       lineWidth: 1,
     });
 

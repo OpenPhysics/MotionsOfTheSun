@@ -77,7 +77,7 @@ export class SunNode extends Node {
     // Sun disc
     const disc = new Circle(SUN_RADIUS, {
       fill: MotionsOfTheSunColors.sunColorProperty,
-      stroke: "rgba(255,255,255,0.5)",
+      stroke: MotionsOfTheSunColors.sunRimColorProperty,
       lineWidth: 1,
       pickable: false,
     });

@@ -51,27 +51,22 @@ const GRID_THICKNESS: number = 1;
 // ── Color helpers ─────────────────────────────────────────────────────────────
 
 /**
- * Interpolate between two hex colors by twilight factor u ∈ [0,1].
- * Transcribed from ZodiacSkyView.getInterpolatedColor.
+ * Interpolate between two colors by twilight factor u ∈ [0,1].
+ * Transcribed from ZodiacSkyView.getInterpolatedColor. Returns a Color so it can
+ * feed LinearGradient.addColorStop directly (and keeps hex out of view code).
  */
-function interpolateColor(c0: string, c1: string, u: number): string {
+function interpolateColor(c0: string | Color, c1: string | Color, u: number): Color {
   const a = Color.toColor(c0);
   const b = Color.toColor(c1);
-  const r = Math.round(a.r + u * (b.r - a.r));
-  const g = Math.round(a.g + u * (b.g - a.g));
-  const bl = Math.round(a.b + u * (b.b - a.b));
-  return `rgb(${r},${g},${bl})`;
+  return new Color(
+    Math.round(a.r + u * (b.r - a.r)),
+    Math.round(a.g + u * (b.g - a.g)),
+    Math.round(a.b + u * (b.b - a.b)),
+  );
 }
 
-// Fixed sky/ground colors from ZodiacSkyView.as (same in default and projector profiles)
-const SKY_NIGHT_TOP = "#000000";
-const SKY_NIGHT_BOTTOM = "#303547";
-const SKY_DAY_TOP = "#7dacf0";
-const SKY_DAY_BOTTOM = "#afbcd8";
-const HORIZON_NIGHT_TOP = "#161f14";
-const HORIZON_NIGHT_BOTTOM = "#354730";
-const HORIZON_DAY_TOP = "#5a7a52";
-const HORIZON_DAY_BOTTOM = "#779768";
+// Faint horizon outline alpha (drawn over the sky/ground separator).
+const HORIZON_OUTLINE_OPACITY: number = 0.15;
 
 export class ZodiacSkyNode extends Node {
   /** x offset of projection origin from left edge of clip area. */
@@ -118,16 +113,18 @@ export class ZodiacSkyNode extends Node {
     // ── Static horizon outline for visual separation ────────────────────────
     this.horizonPath = new Path(this._buildHorizonShape(W, yS), {
       fill: "rgba(0,0,0,0)",
-      stroke: "rgba(255,255,255,0.15)",
+      stroke: MotionsOfTheSunColors.zodiacGridColorProperty,
       lineWidth: 1,
+      opacity: HORIZON_OUTLINE_OPACITY,
       pickable: false,
     });
     this.addChild(this.horizonPath);
 
     // ── Grid (static in horizon frame — drawn once) ─────────────────────────
     this.gridPath = new Path(this._buildGridShape(W, offset), {
-      stroke: `rgba(255,255,255,${GRID_ALPHA_NORMAL})`,
+      stroke: MotionsOfTheSunColors.zodiacGridColorProperty,
       lineWidth: GRID_THICKNESS,
+      opacity: GRID_ALPHA_NORMAL,
       pickable: false,
     });
     this.addChild(this.gridPath);
@@ -286,8 +283,16 @@ export class ZodiacSkyNode extends Node {
   }
 
   private _updateSky(_W: number, H: number, u: number): void {
-    const topColor = interpolateColor(SKY_NIGHT_TOP, SKY_DAY_TOP, u);
-    const bottomColor = interpolateColor(SKY_NIGHT_BOTTOM, SKY_DAY_BOTTOM, u);
+    const topColor = interpolateColor(
+      MotionsOfTheSunColors.zodiacSkyNightTopColorProperty.value,
+      MotionsOfTheSunColors.zodiacSkyDayTopColorProperty.value,
+      u,
+    );
+    const bottomColor = interpolateColor(
+      MotionsOfTheSunColors.zodiacSkyNightBottomColorProperty.value,
+      MotionsOfTheSunColors.zodiacSkyDayBottomColorProperty.value,
+      u,
+    );
     this.skyRect.fill = new LinearGradient(0, 0, 0, H).addColorStop(0, topColor).addColorStop(1, bottomColor);
   }
 
@@ -295,8 +300,16 @@ export class ZodiacSkyNode extends Node {
     if (groundH <= 0) {
       return;
     }
-    const topColor = interpolateColor(HORIZON_NIGHT_TOP, HORIZON_DAY_TOP, u);
-    const bottomColor = interpolateColor(HORIZON_NIGHT_BOTTOM, HORIZON_DAY_BOTTOM, u);
+    const topColor = interpolateColor(
+      MotionsOfTheSunColors.zodiacHorizonNightTopColorProperty.value,
+      MotionsOfTheSunColors.zodiacHorizonDayTopColorProperty.value,
+      u,
+    );
+    const bottomColor = interpolateColor(
+      MotionsOfTheSunColors.zodiacHorizonNightBottomColorProperty.value,
+      MotionsOfTheSunColors.zodiacHorizonDayBottomColorProperty.value,
+      u,
+    );
     this.groundRect.fill = new LinearGradient(0, groundY, 0, groundY + groundH)
       .addColorStop(0, topColor)
       .addColorStop(1, bottomColor);

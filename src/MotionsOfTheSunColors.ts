@@ -180,6 +180,12 @@ const MotionsOfTheSunColors = {
     projector: "#f9a825",
   }),
 
+  /** Translucent white rim/halo around the Sun disc (alpha baked in so the fill stays opaque). */
+  sunRimColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "sunRim", {
+    default: "rgba(255,255,255,0.5)",
+    projector: "rgba(255,255,255,0.5)",
+  }),
+
   /** The Sun's daily path arc (declination circle). Reuses the trail hue. */
   sunPathColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "sunPath", {
     default: "#80d8ff",
@@ -210,6 +216,12 @@ const MotionsOfTheSunColors = {
   orbitPathColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "orbitPath", {
     default: "#c8c8c8",
     projector: "#888888",
+  }),
+
+  /** Translucent night-side shade over the Earth globe (alpha baked in). */
+  nightShadeColorProperty: new ProfileColorProperty(MotionsOfTheSunNamespace, "nightShade", {
+    default: "rgba(6,10,32,0.6)",
+    projector: "rgba(6,10,32,0.6)",
   }),
 
   /** Earth globe ocean fill in screen 2. */

@@ -242,7 +242,7 @@ export class OrbitViewNode extends Node {
     const nightShade = new Node({
       pickable: false,
       clipArea: Shape.circle(0, 0, R),
-      children: [new Rectangle(0, -R, R, 2 * R, { fill: "rgba(6,10,32,0.6)" })],
+      children: [new Rectangle(0, -R, R, 2 * R, { fill: MotionsOfTheSunColors.nightShadeColorProperty })],
     });
 
     // ── Assemble layer order ────────────────────────────────────────────────
