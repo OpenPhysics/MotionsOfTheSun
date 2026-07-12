@@ -26,7 +26,7 @@
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
 import { DerivedProperty, NumberProperty } from "scenerystack/axon";
-import { Range } from "scenerystack/dot";
+import { Dimension2, Range } from "scenerystack/dot";
 import { HBox, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, ResetAllButton, TimeControlNode } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
@@ -120,7 +120,7 @@ export class SiderealSolarTimeScreenView extends ScreenView {
 
     const dayOfYearSlider = new HSlider(sliderProperty, dayOfYearRange, {
       ...MOTIONS_OF_THE_SUN_SLIDER_OPTIONS,
-      trackSize: { width: DAY_OF_YEAR_SLIDER_WIDTH, height: 4 } as never,
+      trackSize: new Dimension2(DAY_OF_YEAR_SLIDER_WIDTH, 4),
       constrainValue: (v) => Math.round(v),
       majorTickLength: 12,
       accessibleName: a11y.controls.dayOfYearSliderStringProperty,
