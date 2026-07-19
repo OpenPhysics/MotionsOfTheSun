@@ -53,7 +53,9 @@ All files were copied with global renames:
 | `common/MotionsOfTheSunControlOptions.ts` | `common/RotatingSkyControlOptions.ts` | rename; exports renamed `MOTIONS_OF_THE_SUN_*` |
 | `common/MotionsOfTheSunHotkeyData.ts` | `common/RotatingSkyHotkeyData.ts` | rename; removed star-specific keys (`ADD_STAR_AT_CENTER_KEYS`, `MOVE_STAR_KEYS`, `MOVE_GUIDE_STAR`) |
 
-**Not copied (D5/D6):** `Star.ts`, `SkyModel.ts`, `StarPatterns.ts`, `EarthGlobeNode`, `FlatEarthMapNode`, `EarthShoreData*`.
+**Not copied (D5/D6):** `Star.ts`, `SkyModel.ts`, `StarPatterns.ts`, `EarthGlobeNode`, `FlatEarthMapNode`.
+
+**Ported separately:** `common/EarthShoreData.ts` — Flash `Globe.as` `_shoreData` coastline polygons; used by `WorldMapNode`, `GeocentricZodiacNode`, `OrbitViewNode`.
 
 ### From SolarSystemModels (`/home/veillette/OpenPhysics/SolarSystemModels/`)
 
@@ -89,6 +91,10 @@ All files were copied with global renames:
 | `sun-paths/view/CircleHoverBalloonNode.ts` | Roll-over balloons for celestial circles |
 | `sun-paths/view/SkyBowlShadingNode.ts` | Flash altitude-linked day/night sky bowl |
 | `sun-paths/view/HorizonShadeNode.ts` | Flash `horizonShade` ground darkening |
+| `common/EarthShoreData.ts` | Flash coastline polygons for WorldMap / geocentric / orbit views |
+| `common/view/ClockNode.ts`, `clockGeometry.ts` | Shared analog clock drawing |
+| `common/MotionsOfTheSunButtonOptions.ts` | Flat button bundles |
+| `preferences/*` | Default latitude query param, Preferences node |
 | `common/view/CelestialPoleAxisNode.ts` | NCP/SCP axis stubs (from RS; Flash `ncpAxis`/`scpAxis`) |
 | `zodiac/view/lambertProjection.ts` | Pure projection functions (verbatim from ZodiacSkyView.as) |
 | `zodiac/view/ZodiacSkyNode.ts` | Optional Lambert sky: gradient + grid + equator + ecliptic + Sun |
@@ -108,15 +114,10 @@ All files were copied with global renames:
 ```
 SunPathsScreenView (ScreenView)
   ├─ backgroundRect (Rectangle)
-  ├─ SunPathsControlPanel (MotionsOfTheSunPanel)
-  │    ├─ latitudeControl (NumberControl)
-  │    ├─ WorldMapNode (flat map, Phase 7.3)
-  │    ├─ dayControl      (NumberControl)
-  │    ├─ monthDayText    (Text)
-  │    ├─ CalendarStripNode (Phase 7.2)
-  │    ├─ timeControl     (NumberControl)
-  │    ├─ SunClockNode (24 h, hour + minute hands)
-  │    └─ checkboxes ×6 + sun-drag mode radio
+  ├─ SunPathsControlPanel (MotionsOfTheSunPanel) — three titled sub-panels:
+  │    ├─ timeAndLocationPanel: latitude, WorldMapNode, day, calendar strip, time, SunClock
+  │    ├─ animationControlsPanel: continuous vs step-by-day radio, loop-day checkbox
+  │    └─ generalSettingsPanel: six display checkboxes + sun-drag mode radio (timeOfDay | dayOfYear)
   ├─ SunReadoutPanel (MotionsOfTheSunPanel)
   │    └─ 7 Text rows — altitude, azimuth, RA, dec, hour angle, sidereal time, EoT
   ├─ SunPathsSkyNode (Node)
@@ -138,7 +139,8 @@ SunPathsScreenView (ScreenView)
   └─ ResetAllButton
 
 pdomPlayAreaNode.pdomOrder  = [hitRect, sunNode]
-pdomControlAreaNode.pdomOrder = [controlPanel, readoutPanel, timeControl, resetAllButton]
+pdomControlAreaNode.pdomOrder = [timeAndLocationPanel, animationControlsPanel, generalSettingsPanel,
+                                  readoutPanel, timeControl, resetAllButton]
 ```
 
 ### Screen 2 — Sidereal & Solar Time
@@ -151,17 +153,17 @@ SiderealSolarTimeScreenView (ScreenView)
   │    ├─ orbitCircle (Circle)
   │    ├─ sunDisc (Circle)
   │    └─ earthGroup (globe + meridian + figure, draggable)
-  ├─ sliderContainer (VBox)
-  │    ├─ dayOfYear label (Text)
-  │    └─ dayOfYearSlider (HSlider)
-  ├─ clocksBox (HBox) — AnalogClockNode ×2 (solar + sidereal, Phase 7.1)
+  ├─ dayOfYearPanel (VBox): label + dayOfYearSlider + TimeJumpPanel.seasonButtons
   ├─ TimeJumpPanel (Node)
-  │    ├─ solarSection / siderealSection / timeOfDaySection / seasonSection
+  │    ├─ solarPanel / siderealPanel (AnalogClockNode ×2 inside jump panel)
+  │    ├─ timeOfDaySection / seasonSection
+  ├─ yearModeBox (VBox): SIMPLE/JULIAN year-length radio
   ├─ TimeControlNode
   └─ ResetAllButton
 
 pdomPlayAreaNode.pdomOrder  = [orbitNode, solarClock, siderealClock]
-pdomControlAreaNode.pdomOrder = [dayOfYearSlider, ...jumpButtons(20), timeControl, resetAllButton]
+pdomControlAreaNode.pdomOrder = [yearModeRadioGroup, dayOfYearSlider, ...jumpButtons(20),
+                                  timeControl, resetAllButton]
 ```
 
 ### Screen 3 — Zodiac
@@ -182,7 +184,7 @@ ZodiacScreenView (ScreenView)
   ├─ TimeControlNode
   └─ ResetAllButton
 
-pdomPlayAreaNode.pdomOrder  = [geocentricNode (or sky hit target)]
+pdomPlayAreaNode.pdomOrder  = [GeocentricZodiacNode hit target — sky mode has no separate pdom play target]
 pdomControlAreaNode.pdomOrder = [viewModeRadioGroup, time buttons ×6, slider, checkboxes ×3,
                                   timeControl, resetAllButton]
 ```
@@ -212,7 +214,7 @@ These are fixed and must not be re-derived (full rationale in `doc/porting-plan.
 | D3 | Lambert sky constellation art = polylines from SSM `ZodiacConstellationsData.ts`. Geocentric view uses Flash stick figures from `ZodiacFlashConstellationsData.ts` |
 | D4 | Animated jumps = cubic ease-in-out inside `step(dt)`; no Flash Timer/twixt |
 | D5 | Sun Paths uses horizon-frame `SkyProjection` (not RS `CelestialSphereNode`/`SkyModel` or WebGL). Flash-faithful sky/horizon shade + NCP/SCP axes live in `SkyBowlShadingNode` / `HorizonShadeNode` / `CelestialPoleAxisNode`. Geocentric Zodiac reuses `SkyProjection` + camera drag |
-| D6 | Draggable Sun moves along its declination circle (= controls time of day) |
+| D6 | Draggable Sun: default `timeOfDay` mode on declination circle; optional `dayOfYear` drags along analemma |
 | D7 | ~~Screen 2 exposes SIMPLE mode only~~ — **superseded:** Screen 2 now shows a SIMPLE/JULIAN year-length radio bound to `timeMaster.modeProperty`; the day-of-year slider hides in JULIAN mode (matches Flash). See `doc/parity-report.md` |
 | D8 | Zodiac screen adds `ZodiacSunStrip` (configurations-sim starfield + Sun) even though Flash lacked it |
 | D9 | `attachSkyCameraInteraction`'s `sky` param narrowed to `{ advanceSiderealTime(hours): void }` |

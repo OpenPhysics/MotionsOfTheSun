@@ -4,99 +4,50 @@ Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhys
 
 ## Project
 
-A three-screen SceneryStack simulation porting the NAAP **Motions of the Sun** lab
-(astroUNL `naap/motion3`), scaffolded from `TemplateSingleSim`. **All three screens are
-implemented** (models, physics, views, a11y, tests). Architecture and formulas live in
-`doc/model.md` and `doc/implementation-notes.md`; feature parity vs Flash is in
-`doc/parity-report.md`. Historical step plan: `doc/porting-plan.md` (phases 0–8 complete;
-treat provenance notes there as superseded by the docs above when they conflict).
+SceneryStack port of the NAAP **Motions of the Sun** lab ([astro.unl.edu/naap/motion3](https://astro.unl.edu/naap/motion3/motion3.html)). Three screens cover the Sun's daily path, the sidereal vs solar day, and the yearly zodiac circuit. Architecture and formulas: [doc/model.md](doc/model.md), [doc/implementation-notes.md](doc/implementation-notes.md). Feature parity vs Flash: [doc/parity-report.md](doc/parity-report.md).
 
-- **Sun Paths** (`src/sun-paths/`) — port of the NAAP *Motions of the Sun* simulator
-  (`sunmotions.swf` = `sunMotions068.swf`): horizon diagram with the Sun's daily path for a
-  chosen latitude and date, with time animation.
-- **Sidereal and Solar Time** (`src/sidereal-solar-time/`) — port of the NAAP *Sidereal Time
-  and Solar Time* demo (`siderealSolarTime.swf`): Earth's rotation vs. orbit, sidereal vs.
-  solar day.
-- **Zodiac** (`src/zodiac/`) — port of the NAAP *Seasons and the Zodiac* explorer
-  (`zodiac.swf`, geocentric `ZodiacViewer` / `zodiac016` family): Earth at the center of a
-  celestial sphere, Sun on the ecliptic rim, zodiac stick figures, day/night band gradient,
-  Earth's rotational axis. Optional secondary mode: Lambert sky view from `zodiacSimulator`.
+- **Sun Paths** (`src/sun-paths/`) — horizon diagram with daily Sun path for latitude and date; draggable Sun; analemma overlay.
+- **Sidereal and Solar Time** (`src/sidereal-solar-time/`) — Earth's orbit vs rotation; `TimeMaster` solar/sidereal clocks and jump panels.
+- **Zodiac** (`src/zodiac/`) — default geocentric celestial sphere (`zodiac.swf` family); optional Lambert sky view from `zodiacSimulator`.
 
-Shared code keeps the `MotionsOfTheSun` prefix; per-screen code uses the
-`SunPaths` / `SiderealSolarTime` / `Zodiac` prefixes. Concept-named folders, no `-screen`
-suffix. `RotatingSky/` (the motion2 lab port) is the closest sibling sim — its horizon
-diagram / `SkyProjection` view code is directly relevant to the Sun Paths screen and the
-geocentric Zodiac sphere. `SolarSystemModels/` has zodiac-strip components relevant to the
-Zodiac strip UI.
+Shared code uses the `MotionsOfTheSun` prefix; per-screen code uses `SunPaths` / `SiderealSolarTime` / `Zodiac`. `RotatingSky/` donated horizon/sky-view code; `SolarSystemModels/` donated zodiac-strip constellation data.
 
 ## Key files
 
-| File | Purpose |
+| Area | Location |
 |---|---|
-| `src/MotionsOfTheSunColors.ts` | All `ProfileColorProperty` instances (default + projector profiles) |
-| `src/MotionsOfTheSunConstants.ts` | Named numeric constants (layout px, physics SI units) |
-| `src/MotionsOfTheSunNamespace.ts` | Namespace used by `.register()` |
-| `src/common/MotionsOfTheSunPanel.ts` | Pre-themed `Panel` wrapper |
-| `src/common/MotionsOfTheSunButtonOptions.ts` | Flat button-appearance option bundles + light-control-surface combo-box options |
-| `src/common/TimeModel.ts` | Composable play/pause + elapsed-time model for animated sims |
-| `src/common/SunEphemeris.ts` | Closed-form solar RA/dec/EoT/GMST (CCNMTL / Flash) |
-| `src/common/model/TimeMaster.ts` | Solar ↔ sidereal time + eased jumps (siderealSolarTime) |
-| `src/i18n/StringManager.ts` | Singleton localized string accessor; per-screen name + a11y getters |
-| `src/main.ts` | Entry point; registers the three screens |
-| `src/sun-paths/SunPathsScreen.ts` | `Screen<SunPathsModel, SunPathsScreenView>` wrapper |
-| `src/sidereal-solar-time/SiderealSolarTimeScreen.ts` | `Screen<SiderealSolarTimeModel, SiderealSolarTimeScreenView>` wrapper |
-| `src/zodiac/ZodiacScreen.ts` | `Screen<ZodiacModel, ZodiacScreenView>` wrapper |
-| `src/zodiac/view/GeocentricZodiacNode.ts` | Lab geocentric Zodiac Explorer (`zodiac.swf`) |
-| `src/preferences/motionsOfTheSunQueryParameters.ts` | `QueryStringMachine` parameters |
-| `scripts/decompile-flash.ts` | Extract ActionScript from the NAAP Flash `.swf` sources via JPEXS FFDec (→ `NAAP/decompiled/`) |
+| Screens | `src/sun-paths/SunPathsScreen.ts`, `src/sidereal-solar-time/SiderealSolarTimeScreen.ts`, `src/zodiac/ZodiacScreen.ts` |
+| Shared solar math | `src/common/SunEphemeris.ts` (closed-form RA/dec/EoT/GMST), `src/common/model/TimeMaster.ts` |
+| Shared sky engine | `src/common/SkyCoordinates.ts`, `SkyProjection.ts`, `skyMorph.ts`, `view/skyGraphics.ts`, `HorizonDomeNode.ts`, `attachSkyCameraInteraction.ts` |
+| Sun Paths views | `sun-paths/view/SunNode.ts`, `AnalemmaNode.ts`, `SunPathsSkyNode.ts`, `CalendarStripNode.ts`, `SunClockNode.ts` |
+| Zodiac views | `zodiac/view/GeocentricZodiacNode.ts`, `ZodiacSkyNode.ts`, `ZodiacSunStrip.ts`, `zodiac/model/geocentricZodiacMath.ts` |
+| Animation | `src/common/TimeModel.ts` (Sun Paths + Zodiac) |
+| Colors / constants | `src/MotionsOfTheSunColors.ts`, `src/MotionsOfTheSunConstants.ts` |
+| Strings | `src/i18n/StringManager.ts` |
+| Preferences / query params | `src/preferences/motionsOfTheSunQueryParameters.ts` |
+| Entry | `src/main.ts` |
 
-## Screens
+## Model
 
-Three screens registered in `src/main.ts`, in this order:
+Three **independent** screen models — no shared root state.
 
-1. **Sun Paths** (`src/sun-paths/`)
-2. **Sidereal and Solar Time** (`src/sidereal-solar-time/`)
-3. **Zodiac** (`src/zodiac/`) — default view = geocentric sphere; optional Lambert sky
+| Screen | Model | Notes |
+|---|---|---|
+| **Sun Paths** | `SunPathsModel` | Closed-form solar position via `SunEphemeris.getSunPosition(day)`; **0-based day-of-year** (Jan 1 00:00 UT = 0.0; default 146.5 = May 27 noon); horizon alt/az from `SkyCoordinates`; draggable Sun in time-of-day or day-of-year mode; GMST used as LST (Greenwich observer) |
+| **Sidereal & Solar Time** | `SiderealSolarTimeModel` | `TimeMaster` port: solar vs sidereal time in solar days from vernal-equinox epoch; SIMPLE (365 d) vs JULIAN (365.25 d) year modes; animated cubic ease-in-out jumps; draggable Earth on orbit view |
+| **Zodiac** | `ZodiacModel` | Default `viewMode = "earthCentered"` → `GeocentricZodiacNode` (Flash ZodiacViewer); optional `"sky"` → Lambert `ZodiacSkyNode`; adds `ZodiacSunStrip` (configurations-style starfield) though Flash lacked it; `VE_DOY_OFFSET = 78` for days-since-VE bookkeeping |
 
-Shared physics lives in `src/common/`; per-screen state in each `*Model.ts`. Per-screen a11y
-lives under `a11y.<screenKey>` in each locale JSON, exposed via
-`StringManager.getSunPathsA11yStrings()` / `getSiderealSolarTimeA11yStrings()` /
-`getZodiacA11yStrings()`. Each `currentDetailsContent` is a live `DerivedProperty` over
-model state; interactive nodes have `accessibleName`s.
+**Shared gotchas**
 
-## Decompiling the Flash sources
+- **D1:** All solar math uses CCNMTL/Flash closed forms in `SunEphemeris.ts`; npm `solar-calculator` is **not** used. Day argument is **Flash 0-based**, not CCNMTL's 1-based Date DOY.
+- **D2:** One obliquity **ε = 23.44°** (`COT_OBLIQUITY`) for all three screens (Flash `zodiacSimulator` used 23.5°).
+- **D9:** `attachSkyCameraInteraction`'s `sky` param is narrowed to `{ advanceSiderealTime(hours): void }` — no Shift-click star placement.
+- Lab SWF identity: `sunmotions.swf` = `sunMotions068`; `siderealSolarTime.swf` matches decompile target; `zodiac.swf` = ZodiacViewer family (**not** `zodiacSimulator`).
 
-`npm run decompile` (script: `scripts/decompile-flash.ts`) extracts readable
-ActionScript from the NAAP Flash movies so the port can be diffed against the
-originals. The `.fla` files are old binary projects no tool reads directly, so the
-script decompiles their sibling compiled `.swf` via **JPEXS FFDec** (needs Java).
+## Accessibility
 
-```sh
-npm run decompile                 # the three lab simulators → NAAP/decompiled/<name>/scripts/*.as
-npm run decompile -- --all        # + supporting sun-path / sidereal-time demos
-npm run decompile -- --list       # dry run: print what would be decompiled
-npm run decompile -- --setup      # one-time: download FFDec into tools/ffdec/
-```
-
-Default targets: `sunMotions068-C` (dev sibling of lab `sunmotions.swf` = `sunMotions068`),
-`siderealSolarTime` (matches lab SWF), `zodiac017` (same family as lab `zodiac.swf` /
-`zodiac016`; 017 drops the rotational axis that 016 keeps). Output goes to
-`NAAP/decompiled/` (git-ignored, along with `tools/ffdec/`). The decompiled AS is a
-**read-only reference** — transcribe the maths into typed TS in `src/`; don't vendor it.
-
-**Lab SWF identity (verify with md5 when unsure):**
-- `astroUNL/naap/motion3/animations/sunmotions.swf` = `flashdev2/sunMotions/sunMotions068.swf`
-- `…/siderealSolarTime.swf` = `flashdev2/siderealSolarTime/siderealSolarTime.swf`
-- `…/zodiac.swf` = ZodiacViewer family (`zodiac016`/`017`); **not** `zodiacSimulator`
-
-## npm scripts
-
-`start`/`dev` (vite) · `build` · `build:single` · `check` (tsc) · `lint`/`format` (biome) ·
-`test` (vitest) · `icons` · `decompile` · `rename`. Gate: `npm run check && npm run lint && npm run build && npm test`.
-
-## PWA
-
-After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).
+Follows the shared [OpenPhysics accessibility convention](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
+Each screen registers `*ScreenSummaryContent` and `*KeyboardHelpContent`, with explicit `pdomOrder`. A11y strings live under `a11y.sunPaths`, `a11y.siderealSolarTime`, and `a11y.zodiac` in each locale JSON, via `StringManager.getSunPathsA11yStrings()` / `getSiderealSolarTimeA11yStrings()` / `getZodiacA11yStrings()`. Keep `currentDetailsContent` live over model state; every interactive node needs an `accessibleName`.
 
 ## Testing
 
@@ -104,11 +55,40 @@ Fleet-standard Vitest layout:
 
 | Path | Purpose |
 |---|---|
-| `vitest.config.ts` | Test environment + `setupFiles` when present; `execArgv: ["--expose-gc"]` with memory-leak suite |
-| `tests/setup.ts` | Canvas / AudioContext mocks + `init({ name: "…" })` before SceneryStack imports (when required) |
-| `tests/**/*.test.ts` | Model/physics unit tests — mirror `src/` under `tests/` |
+| `vitest.config.ts` | Test environment + `setupFiles`; `execArgv: ["--expose-gc"]` with memory-leak suite |
+| `tests/setup.ts` | Canvas / AudioContext mocks + `init({ name: "…" })` before SceneryStack imports |
+| `tests/**/*.test.ts` | Model/physics unit tests |
 | `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression (fleet pattern) |
+
+| File | Covers |
+|---|---|
+| `SunEphemeris.test.ts` | RA/dec, EoT, GMST, 0-based DOY |
+| `SunPathsModel.test.ts` | Horizon geometry, drag modes, reset |
+| `SiderealSolarTimeModel.test.ts` | TimeMaster jumps, year modes |
+| `TimeMaster.test.ts` | Solar/sidereal ratios, `isAt*` predicates |
+| `ZodiacModel.test.ts` | View modes, day advancement |
+| `geocentricZodiacMath.test.ts`, `zodiacBandGraphics.test.ts`, `lambertProjection.test.ts` | Zodiac geometry |
+| `analemmaClosestDay.test.ts` | Analemma overlay |
+| `SkyCoordinates.test.ts`, `ViewDirection.test.ts`, `skyGraphics.test.ts` | Shared sky helpers |
+| `TimeModel.test.ts` | Play/pause elapsed time |
+| `memory-leak.test.ts` | Dispose regression |
 
 - Put unit tests only under root `tests/` (never co-locate or use `__tests__/`).
 - Run `npm test`. CI runs the suite when a `test` script is present.
-- Expand `memory-leak.test.ts` for components that add/remove nodes or link Properties at runtime (see OpticsLab).
+
+## Commands
+
+```bash
+npm run lint && npm run check && npm run build && npm test
+```
+
+## Development notes
+
+**Donor provenance (from `RotatingSky/`):** `SkyCoordinates.ts`, `SkyProjection.ts`, `skyMorph.ts`, `ViewDirection.ts`, `skyGraphics.ts`, `starGraphics.ts`, `skyViewLayout.ts`, `HorizonDomeNode.ts`, `HorizonGroundNode.ts`, `CelestialPoleAxisNode.ts`, `CelestialEquatorOnHorizonNode.ts`, `HourCircleOnHorizonNode.ts`, `attachSkyCameraInteraction.ts`, and control/hotkey option bundles — copied with `RotatingSky*` → `MotionsOfTheSun*` renames. **Not copied:** `Star.ts`, `SkyModel.ts`, `StarPatterns.ts`.
+
+**From `SolarSystemModels/`:** `ZodiacConstellationsData.ts`, `ZodiacStripBackground.ts` (verbatim + namespace rename); Lambert constellation art uses SSM polylines; geocentric stick figures come from Flash `ZodiacFlashConstellationsData.ts`.
+
+**New (no donor):** `SunEphemeris.ts`, `TimeMaster.ts`, Sun Paths / Sidereal / Zodiac screen-specific view nodes, `EarthShoreData.ts`, `WorldMapNode.ts`, `GeocentricZodiacNode.ts`, `lambertProjection.ts`.
+
+- **`npm run decompile`** default targets: `sunMotions068-C`, `siderealSolarTime`, `zodiac017` (same family as lab `zodiac.swf` / `zodiac016`).
+- After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).

@@ -73,7 +73,7 @@ eqnOfTimeHours   = eot_rad · 12/π
 eqnOfTimeMinutes = 60 · eqnOfTimeHours
 ```
 
-EoT ranges roughly −14 min (early Nov) to +16 min (early Nov is the minimum). Notable zeros near mid-April, mid-Jun, Sep 1, Dec 25.
+EoT ranges roughly **−14 min (mid-Feb)** to **+16 min (early Nov)**. Notable zeros near mid-April, mid-Jun, Sep 1, Dec 25.
 
 ### Greenwich Mean Sidereal Time (`getSiderealTimeHours(day)`)
 
@@ -90,11 +90,14 @@ H_hours = (GMST − RA) mod 24, wrapped to [−12, 12]
 H_rad   = H_hours · π/12
 
 sin h = sin φ · sin δ + cos φ · cos δ · cos H
-cos A = (sin δ − sin φ · sin h) / (cos φ · cos h)
-A     = acos(clamp(cos A, −1, 1));  if H < 0 or H > π → A, else 2π − A
 ```
 
-where φ = latitude, δ = solar declination, h = altitude, A = azimuth (N = 0, E = 90°, ...).
+Altitude *h* uses the formula above. **Azimuth** in the sim readouts and sky view comes from
+`SkyCoordinates.equatorialToHorizontal`: horizon-frame components give
+`az = atan2(east, north)` with azimuth measured from North through East (0° = N, 90° = E).
+`SunEphemeris.getSolarAzimuthRad` exists for cross-checks but is not the production path.
+
+where φ = latitude, δ = solar declination, h = altitude, A = azimuth.
 
 ### Simplifications
 
@@ -252,8 +255,9 @@ sunRaRad  = atan2(sin λ · cos ε, cos λ)
 
 Zodiac sign index: `floor(λ_normalized / (2π/12))` where λ_normalized ∈ [0, 2π).
 
-Geocentric view may derive λ from Flash calendar DOY instead (`geocentricSunLongitudeRad`);
-the strip and Lambert mode use the shared `sunLongitudeRadProperty` above.
+**Geocentric view** always uses Flash calendar DOY: TimeMaster → calendar day-of-year →
+`geocentricSunLongitudeRad(doy)` in `GeocentricZodiacNode`. The **ZodiacSunStrip** and optional
+**Lambert sky** mode use the shared `sunLongitudeRadProperty` from TimeMaster above.
 
 ---
 
