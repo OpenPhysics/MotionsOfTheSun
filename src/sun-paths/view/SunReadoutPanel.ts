@@ -12,6 +12,7 @@
  */
 
 import { DerivedProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { GridBox, Text, VBox } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { MotionsOfTheSunPanel } from "../../common/MotionsOfTheSunPanel.js";
@@ -24,7 +25,7 @@ import type { SunPathsModel } from "../model/SunPathsModel.js";
 
 const formatDeg = (deg: number, decimals = 1): string => {
   const sign = deg < 0 ? "−" : "";
-  return `${sign}${Math.abs(deg).toFixed(decimals)}°`;
+  return `${sign}${toFixed(Math.abs(deg), decimals)}°`;
 };
 
 const formatRa = (hours: number): string => {
@@ -85,7 +86,7 @@ export class SunReadoutPanel extends MotionsOfTheSunPanel {
     ];
 
     const altValueProp = new DerivedProperty([model.sunAltDegProperty], (alt) => formatDeg(alt));
-    const azValueProp = new DerivedProperty([model.sunAzDegProperty], (az) => `${az.toFixed(1)}°`);
+    const azValueProp = new DerivedProperty([model.sunAzDegProperty], (az) => `${toFixed(az, 1)}°`);
     const raValueProp = new DerivedProperty([model.sunRaHoursProperty], (ra) => formatRa(ra));
     const decValueProp = new DerivedProperty([model.sunDecDegProperty], (dec) => formatDeg(dec));
     const haValueProp = new DerivedProperty([model.hourAngleHoursProperty], (ha) => formatHoursMinutesSigned(ha));
