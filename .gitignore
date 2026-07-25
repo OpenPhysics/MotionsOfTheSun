@@ -42,3 +42,6 @@ Thumbs.db
 NAAP/
 # Flash decompilation tooling (npm run decompile) — downloaded FFDec
 tools/ffdec/
+
+# CI / local npm audit artifact (must not be linted)
+audit.json
