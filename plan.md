@@ -1,9 +1,6 @@
-# Porting plan
+# Motions of the Sun — docs index
 
-This file is a stub. The phased implementation plan lives at
-**[`doc/porting-plan.md`](./doc/porting-plan.md)**.
-
-Phases 0–8 are complete. For current architecture and Flash parity, see:
+Porting is complete. For current architecture and Flash parity, see:
 
 - [`doc/implementation-notes.md`](./doc/implementation-notes.md)
 - [`doc/model.md`](./doc/model.md)

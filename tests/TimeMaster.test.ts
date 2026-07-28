@@ -2,7 +2,7 @@
  * TimeMaster.test.ts
  *
  * Unit tests for the TimeMaster solar/sidereal time model.
- * Test numbering matches the porting-plan §Step 1.2 specification:
+ * Test numbering matches the historical porting Step 1.2 specification:
  *
  *  1. Year-wrap: +365 solar days (SIMPLE) / +365.25 (JULIAN) → sidereal +366/+366.25,
  *     solarDaysSinceVE wraps to 0.

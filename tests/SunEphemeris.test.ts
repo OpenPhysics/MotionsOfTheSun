@@ -6,7 +6,7 @@
  *
  * Day arguments use the Flash / Siedell 0-based DOY convention (Jan 1 = 0).
  *
- * Test numbering matches the porting-plan §Step 1.1 specification:
+ * Test numbering matches the historical porting Step 1.1 specification:
  *  1. Equinox position
  *  2. Solstice positions
  *  3. Equation of time extrema and zero crossing

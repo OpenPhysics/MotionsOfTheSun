@@ -205,7 +205,7 @@ Optional Zodiac mode: Lambert sky from `flashdev2/zodiacSimulator/` (`ZodiacSkyN
 
 ## Design decisions (summary)
 
-These are fixed and must not be re-derived (full rationale in `doc/porting-plan.md`):
+These are fixed and must not be re-derived:
 
 | # | Decision |
 |---|---|
