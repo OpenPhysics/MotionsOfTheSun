@@ -1,5 +1,5 @@
 /**
- * Fleet-standard memory-leak regression suite (TemplateSingleSim / QubitSketch pattern).
+ * Fleet-standard memory-leak regression suite (SceneryStackTemplate / QubitSketch pattern).
  */
 
 import { describe, expect, it } from "vitest";
