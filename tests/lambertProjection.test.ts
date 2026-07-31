@@ -70,7 +70,10 @@ describe("lambertProjection — horizon projection", () => {
     const pt = projectHorizon(0, Math.PI / 2, W);
     expect(pt).not.toBeNull();
     // Zenith is straight up; azimuth is undefined, but x should be ≈ 0 by symmetry
-    expect(Math.abs(pt!.x)).toBeLessThan(1e-6);
+    if (!pt) {
+      throw new Error("expected zenith projection");
+    }
+    expect(Math.abs(pt.x)).toBeLessThan(1e-6);
   });
 
   it("scale doubles with width", () => {
@@ -78,7 +81,10 @@ describe("lambertProjection — horizon projection", () => {
     const pt2 = projectHorizon(Math.PI, 0, 2 * W);
     expect(pt1).not.toBeNull();
     expect(pt2).not.toBeNull();
-    expect(pt2!.y).toBeCloseTo(2 * pt1!.y, 3);
+    if (!(pt1 && pt2)) {
+      throw new Error("expected scale-test projections");
+    }
+    expect(pt2.y).toBeCloseTo(2 * pt1.y, 3);
   });
 });
 
@@ -95,8 +101,11 @@ describe("lambertProjection — celestial projection", () => {
 
     expect(celestialZenith).not.toBeNull();
     expect(horizonZenith).not.toBeNull();
-    expect(celestialZenith!.x).toBeCloseTo(horizonZenith!.x, 3);
-    expect(celestialZenith!.y).toBeCloseTo(horizonZenith!.y, 3);
+    if (!(celestialZenith && horizonZenith)) {
+      throw new Error("expected zenith projections");
+    }
+    expect(celestialZenith.x).toBeCloseTo(horizonZenith.x, 3);
+    expect(celestialZenith.y).toBeCloseTo(horizonZenith.y, 3);
   });
 
   it("at LST = 0, celestial equator point at ra=0, dec=0 is reachable", () => {
