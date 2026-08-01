@@ -90,5 +90,5 @@ npm run lint && npm run check && npm run build && npm test
 
 **New (no donor):** `SunEphemeris.ts`, `TimeMaster.ts`, Sun Paths / Sidereal / Zodiac screen-specific view nodes, `EarthShoreData.ts`, `WorldMapNode.ts`, `GeocentricZodiacNode.ts`, `lambertProjection.ts`.
 
-- **`npm run decompile`** default targets: `sunMotions068-C`, `siderealSolarTime`, `zodiac017` (same family as lab `zodiac.swf` / `zodiac016`).
+- **`npm run decompile`** default targets: `sunMotions068-C`, `siderealSolarTime`, `zodiac017` (same family as lab `zodiac.swf` / `zodiac016`). Sources: `../Baseline/Astronomy/flash-animations`.
 - After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).
