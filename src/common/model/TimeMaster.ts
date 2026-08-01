@@ -21,7 +21,7 @@
  */
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
-import { BooleanProperty, DerivedProperty, NumberProperty, Property } from "scenerystack/axon";
+import { BooleanProperty, DerivedProperty, NumberProperty, StringUnionProperty } from "scenerystack/axon";
 import {
   JULIAN_TROPICAL_YEAR,
   SIMPLE_TROPICAL_YEAR,
@@ -71,7 +71,7 @@ export class TimeMaster {
   public readonly solarTimeProperty: NumberProperty;
 
   /** Current mode: "simple" (365-day year) or "julian" (365.25-day year). */
-  public readonly modeProperty: Property<TimeMasterMode>;
+  public readonly modeProperty: StringUnionProperty<TimeMasterMode>;
 
   /** True while an eased animation is running. */
   public readonly isAnimatingProperty: BooleanProperty;
@@ -136,7 +136,7 @@ export class TimeMaster {
 
   public constructor() {
     this.solarTimeProperty = new NumberProperty(SOLAR_TIME_AT_EPOCH);
-    this.modeProperty = new Property<TimeMasterMode>("simple");
+    this.modeProperty = new StringUnionProperty<TimeMasterMode>("simple", { validValues: ["simple", "julian"] });
     this.isAnimatingProperty = new BooleanProperty(false);
     this._animTarget = SOLAR_TIME_AT_EPOCH;
 

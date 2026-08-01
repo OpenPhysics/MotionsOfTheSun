@@ -25,7 +25,13 @@
  */
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
-import { BooleanProperty, DerivedProperty, EnumerationProperty, NumberProperty, Property } from "scenerystack/axon";
+import {
+  BooleanProperty,
+  DerivedProperty,
+  EnumerationProperty,
+  NumberProperty,
+  StringUnionProperty,
+} from "scenerystack/axon";
 import type { TModel } from "scenerystack/joist";
 import { TimeSpeed } from "scenerystack/scenery-phet";
 import { equatorialToHorizontal } from "../../common/SkyCoordinates.js";
@@ -103,10 +109,10 @@ export class SunPathsModel implements TModel {
   public readonly timeSpeedProperty: EnumerationProperty<TimeSpeed>;
 
   /** "continuous" (default) vs "stepByDay" whole-day stepping. */
-  public readonly animationModeProperty: Property<SunPathsAnimationMode>;
+  public readonly animationModeProperty: StringUnionProperty<SunPathsAnimationMode>;
 
   /** Flash Settings Panel: dragging the Sun changes time of day vs day of year. */
-  public readonly sunDragModeProperty: Property<SunDragMode>;
+  public readonly sunDragModeProperty: StringUnionProperty<SunDragMode>;
 
   /** Fractional days accrued in step-by-day mode until a whole day is reached. */
   private stepAccumulatorDays = 0;
@@ -141,8 +147,12 @@ export class SunPathsModel implements TModel {
 
     this.timer = new TimeModel(false);
     this.timeSpeedProperty = new EnumerationProperty(TimeSpeed.NORMAL);
-    this.animationModeProperty = new Property<SunPathsAnimationMode>("continuous");
-    this.sunDragModeProperty = new Property<SunDragMode>("timeOfDay");
+    this.animationModeProperty = new StringUnionProperty<SunPathsAnimationMode>("continuous", {
+      validValues: ["continuous", "stepByDay"],
+    });
+    this.sunDragModeProperty = new StringUnionProperty<SunDragMode>("timeOfDay", {
+      validValues: ["timeOfDay", "dayOfYear"],
+    });
 
     // A partial day must not carry across a pause or a mode switch.
     this.timer.isPlayingProperty.lazyLink(() => {

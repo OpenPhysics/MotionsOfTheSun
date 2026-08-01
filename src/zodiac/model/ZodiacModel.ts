@@ -20,7 +20,7 @@
  */
 
 import type { TReadOnlyProperty } from "scenerystack/axon";
-import { BooleanProperty, DerivedProperty, Property } from "scenerystack/axon";
+import { BooleanProperty, DerivedProperty, StringUnionProperty } from "scenerystack/axon";
 import type { TModel } from "scenerystack/joist";
 import { TimeMaster } from "../../common/model/TimeMaster.js";
 import { TimeModel } from "../../common/TimeModel.js";
@@ -136,7 +136,7 @@ export class ZodiacModel implements TModel {
    *  - `"earthCentered"` — lab geocentric Zodiac Explorer (`zodiac.swf`) sphere (default)
    *  - `"sky"` — Lambert observer sky view (zodiacSimulator)
    */
-  public readonly viewModeProperty: Property<ZodiacViewMode>;
+  public readonly viewModeProperty: StringUnionProperty<ZodiacViewMode>;
 
   // ── Derived astronomical quantities ──────────────────────────────────────────
 
@@ -203,7 +203,9 @@ export class ZodiacModel implements TModel {
     this.constellationLabelsVisibleProperty = new BooleanProperty(false);
     this.eclipticLabelVisibleProperty = new BooleanProperty(false);
     this.celestialEquatorLabelVisibleProperty = new BooleanProperty(false);
-    this.viewModeProperty = new Property<ZodiacViewMode>("earthCentered");
+    this.viewModeProperty = new StringUnionProperty<ZodiacViewMode>("earthCentered", {
+      validValues: ["sky", "earthCentered"],
+    });
 
     // ── Derived: sun longitude ──────────────────────────────────────────────
     this.sunLongitudeRadProperty = new DerivedProperty(
