@@ -30,7 +30,7 @@ Data flows Model → View through AXON `Property` objects; the view observes via
 
 ## Donor-file provenance map
 
-### From RotatingSky (`/home/veillette/OpenPhysics/RotatingSky/`)
+### From RotatingSky
 
 All files were copied with global renames:
 `RotatingSky*` → `MotionsOfTheSun*`, `rotating-sky` → `motions-of-the-sun`, `ROTATING_SKY_` → `MOTIONS_OF_THE_SUN_`.
@@ -57,7 +57,7 @@ All files were copied with global renames:
 
 **Ported separately:** `common/EarthShoreData.ts` — Flash `Globe.as` `_shoreData` coastline polygons; used by `WorldMapNode`, `GeocentricZodiacNode`, `OrbitViewNode`.
 
-### From SolarSystemModels (`/home/veillette/OpenPhysics/SolarSystemModels/`)
+### From SolarSystemModels
 
 | This repo (`src/`) | Donor file (SSM `src/`) | Adaptations |
 |---|---|---|
