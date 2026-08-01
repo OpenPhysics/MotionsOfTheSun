@@ -38,7 +38,7 @@ Thumbs.db
 # Claude Code - local settings excluded, hooks tracked
 .claude/settings.local.json
 
-# NAAP reference sources (vendored Flash originals + decompiled output) — kept local, not committed
+# Local decompile output (and any accidental NAAP re-clones). Upstream sources: ../Baseline/Astronomy/
 NAAP/
 # Flash decompilation tooling (npm run decompile) — downloaded FFDec
 tools/ffdec/
