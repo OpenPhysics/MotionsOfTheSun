@@ -19,10 +19,10 @@
 import type { TReadOnlyProperty } from "scenerystack/axon";
 import { DerivedProperty, Property } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { HBox, type Node, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, ResetAllButton, TimeControlNode } from "scenerystack/scenery-phet";
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { Checkbox, HSlider, RectangularPushButton, RectangularRadioButtonGroup } from "scenerystack/sun";
 import {
   FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS,
@@ -59,14 +59,19 @@ const SKY_WIDTH = 450;
 const SKY_LEFT = GEO_LEFT;
 const SKY_TOP = GEO_TOP;
 
+export type ZodiacScreenViewOptions = ScreenViewOptions;
+
 export class ZodiacScreenView extends ScreenView {
   private readonly geocentricNode: GeocentricZodiacNode;
 
-  public constructor(model: ZodiacModel, options?: ScreenViewOptions) {
-    super({
-      screenSummaryContent: new ZodiacScreenSummaryContent(model),
-      ...options,
-    });
+  public constructor(model: ZodiacModel, providedOptions?: ZodiacScreenViewOptions) {
+    const options = optionize<ZodiacScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new ZodiacScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     const strings = StringManager.getInstance().getZodiacScreenStrings();
     const a11y = StringManager.getInstance().getZodiacA11yStrings();

@@ -13,10 +13,10 @@
  */
 
 import { Vector2 } from "scenerystack/dot";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Rectangle, VBox } from "scenerystack/scenery";
 import { ResetAllButton, TimeControlNode } from "scenerystack/scenery-phet";
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import {
   FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS,
   FLAT_RESET_ALL_BUTTON_OPTIONS,
@@ -54,14 +54,19 @@ const computeDomeFit = (
   return { center: new Vector2(centerX, centerY), radius };
 };
 
+export type SunPathsScreenViewOptions = ScreenViewOptions;
+
 export class SunPathsScreenView extends ScreenView {
   private readonly skyNode: SunPathsSkyNode;
 
-  public constructor(model: SunPathsModel, options?: ScreenViewOptions) {
-    super({
-      screenSummaryContent: new SunPathsScreenSummaryContent(model),
-      ...options,
-    });
+  public constructor(model: SunPathsModel, providedOptions?: SunPathsScreenViewOptions) {
+    const options = optionize<SunPathsScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new SunPathsScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     // ── Background ─────────────────────────────────────────────────────────────
     const backgroundRect = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {

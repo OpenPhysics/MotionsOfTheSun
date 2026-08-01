@@ -22,10 +22,11 @@
 
 import { DerivedProperty, NumberProperty, Property, type TReadOnlyProperty } from "scenerystack/axon";
 import { clamp, Matrix3, Vector2, Vector3 } from "scenerystack/dot";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 
 export type ProjectedPoint = { point: Vector2; depth: number };
 
-export type SkyProjectionOptions = {
+type SkyProjectionSelfOptions = {
   /** Screen-space center of the sphere. */
   center?: Vector2;
   /** Screen-space radius of the sphere, in pixels. */
@@ -40,6 +41,8 @@ export type SkyProjectionOptions = {
    */
   maxElevation?: number;
 };
+
+export type SkyProjectionOptions = SkyProjectionSelfOptions;
 
 // The camera tilt is clamped just shy of the poles so the sphere never flips.
 const DEFAULT_MAX_ELEVATION = Math.PI / 2 - 1e-3;
@@ -67,14 +70,16 @@ export class SkyProjection {
   public readonly viewMatrixProperty: TReadOnlyProperty<Matrix3>;
 
   public constructor(providedOptions?: SkyProjectionOptions) {
-    const options = {
-      center: new Vector2(0, 0),
-      radius: 150,
-      azimuth: 0,
-      elevation: 0,
-      maxElevation: DEFAULT_MAX_ELEVATION,
-      ...providedOptions,
-    };
+    const options = optionize<SkyProjectionOptions, SkyProjectionSelfOptions, EmptySelfOptions>()(
+      {
+        center: new Vector2(0, 0),
+        radius: 150,
+        azimuth: 0,
+        elevation: 0,
+        maxElevation: DEFAULT_MAX_ELEVATION,
+      },
+      providedOptions,
+    );
 
     this.center = options.center;
     this.radius = options.radius;

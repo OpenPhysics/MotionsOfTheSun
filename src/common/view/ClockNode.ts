@@ -13,6 +13,7 @@
  * then `addChild` them so they layer above the face and ticks.
  */
 
+import { combineOptions, optionize } from "scenerystack/phet-core";
 import { Circle, Line, Node, type NodeOptions, Text, type TPaint } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { dialPoint } from "./clockGeometry.js";
@@ -51,7 +52,7 @@ export type ClockNumeralConfig = {
   fill?: TPaint;
 };
 
-export type ClockNodeOptions = {
+export type ClockNodeSelfOptions = {
   radius: number;
   faceFill: TPaint;
   faceStroke: TPaint;
@@ -61,26 +62,27 @@ export type ClockNodeOptions = {
   hubRadius?: number;
   ticks: ClockTickConfig;
   /** Optional ring of hour numerals drawn above the ticks, below the hands. */
-  numerals?: ClockNumeralConfig;
-} & NodeOptions;
+  numerals?: ClockNumeralConfig | null;
+};
+
+export type ClockNodeOptions = ClockNodeSelfOptions & NodeOptions;
 
 export class ClockNode extends Node {
   protected readonly radius: number;
   private readonly markColor: TPaint;
   private readonly hubRadius: number;
 
-  protected constructor(options: ClockNodeOptions) {
-    const {
-      radius,
-      faceFill,
-      faceStroke,
-      faceLineWidth = 1.5,
-      markColor,
-      hubRadius = 3.5,
-      ticks,
-      numerals,
-      ...nodeOptions
-    } = options;
+  protected constructor(providedOptions: ClockNodeOptions) {
+    const options = optionize<ClockNodeOptions, ClockNodeSelfOptions, NodeOptions>()(
+      {
+        faceLineWidth: 1.5,
+        hubRadius: 3.5,
+        numerals: null,
+      },
+      providedOptions,
+    );
+    const { radius, faceFill, faceStroke, faceLineWidth, markColor, hubRadius, ticks, numerals, ...nodeOptions } =
+      options;
 
     const face = new Circle(radius, { fill: faceFill, stroke: faceStroke, lineWidth: faceLineWidth });
 
@@ -118,7 +120,7 @@ export class ClockNode extends Node {
       children.push(numeralNode);
     }
 
-    super({ ...nodeOptions, children });
+    super(combineOptions<NodeOptions>(nodeOptions, { children }));
 
     this.radius = radius;
     this.markColor = markColor;

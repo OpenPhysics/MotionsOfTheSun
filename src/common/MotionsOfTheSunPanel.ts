@@ -25,21 +25,26 @@
  *   const panel = new MotionsOfTheSunPanel(content, { fill: "transparent" });
  */
 
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { Node } from "scenerystack/scenery";
-import type { PanelOptions } from "scenerystack/sun";
-import { Panel } from "scenerystack/sun";
+import { Panel, type PanelOptions } from "scenerystack/sun";
 import MotionsOfTheSunColors from "../MotionsOfTheSunColors.js";
 import { PANEL_CORNER_RADIUS } from "../MotionsOfTheSunConstants.js";
 
+export type MotionsOfTheSunPanelOptions = PanelOptions;
+
 export class MotionsOfTheSunPanel extends Panel {
-  public constructor(content: Node, providedOptions?: PanelOptions) {
-    super(content, {
-      fill: MotionsOfTheSunColors.panelBackgroundColorProperty,
-      stroke: MotionsOfTheSunColors.panelBorderColorProperty,
-      cornerRadius: PANEL_CORNER_RADIUS,
-      xMargin: 12,
-      yMargin: 10,
-      ...providedOptions,
-    });
+  public constructor(content: Node, providedOptions?: MotionsOfTheSunPanelOptions) {
+    const options = optionize<MotionsOfTheSunPanelOptions, EmptySelfOptions, PanelOptions>()(
+      {
+        fill: MotionsOfTheSunColors.panelBackgroundColorProperty,
+        stroke: MotionsOfTheSunColors.panelBorderColorProperty,
+        cornerRadius: PANEL_CORNER_RADIUS,
+        xMargin: 12,
+        yMargin: 10,
+      },
+      providedOptions,
+    );
+    super(content, options);
   }
 }

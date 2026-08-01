@@ -27,10 +27,10 @@
 import type { TReadOnlyProperty } from "scenerystack/axon";
 import { DerivedProperty, NumberProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { HBox, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, ResetAllButton, TimeControlNode } from "scenerystack/scenery-phet";
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { HSlider, RectangularRadioButtonGroup } from "scenerystack/sun";
 import {
   FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS,
@@ -57,12 +57,17 @@ import { TimeJumpPanel } from "./TimeJumpPanel.js";
 /** Width of the day-of-year slider track (px). */
 const DAY_OF_YEAR_SLIDER_WIDTH = 380;
 
+export type SiderealSolarTimeScreenViewOptions = ScreenViewOptions;
+
 export class SiderealSolarTimeScreenView extends ScreenView {
-  public constructor(model: SiderealSolarTimeModel, options?: ScreenViewOptions) {
-    super({
-      screenSummaryContent: new SiderealSolarTimeScreenSummaryContent(model),
-      ...options,
-    });
+  public constructor(model: SiderealSolarTimeModel, providedOptions?: SiderealSolarTimeScreenViewOptions) {
+    const options = optionize<SiderealSolarTimeScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new SiderealSolarTimeScreenSummaryContent(model),
+      },
+      providedOptions,
+    );
+    super(options);
 
     const strings = StringManager.getInstance().getSiderealSolarTimeStrings();
     const a11y = StringManager.getInstance().getSiderealSolarTimeA11yStrings();
