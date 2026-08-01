@@ -2,7 +2,7 @@
  * SunEphemeris.ts
  *
  * Closed-form solar position functions transcribed from the CCNMTL JS rewrite
- * of the NAAP sun-motion-simulator (`NAAP/astro-simulations/sun-motion-simulator/src/utils.js`).
+ * of the NAAP sun-motion-simulator (`../Baseline/Astronomy/astro-simulations/sun-motion-simulator/src/utils.js`).
  * The original algorithm is credited to
  * https://gist.github.com/chris-siedell/b5de8dae41cfa8a5ad67a1501aeeab47 (Chris Siedell).
  *

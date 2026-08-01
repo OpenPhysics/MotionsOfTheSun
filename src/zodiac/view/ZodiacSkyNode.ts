@@ -16,7 +16,7 @@
  * to that origin. We translate children by (width/2, viewOffset(width)) so the
  * origin maps to the correct screen position.
  *
- * Source: NAAP/flash-animations/flashdev2/zodiacSimulator/ZodiacSkyView.as
+ * Source: ../Baseline/Astronomy/flash-animations/flashdev2/zodiacSimulator/ZodiacSkyView.as
  *   lines 324–593 (drawing routines) and 638–686 (sun/twilight).
  */
 

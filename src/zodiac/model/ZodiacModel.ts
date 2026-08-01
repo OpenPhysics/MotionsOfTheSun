@@ -14,7 +14,7 @@
  * All derived astronomical quantities are DerivedProperties over TimeMaster's
  * solarDaysSinceVernalEquinoxProperty and siderealTimeProperty.
  *
- * Physics source: NAAP/flash-animations/flashdev2/zodiacSimulator/Main.as (lines
+ * Physics source: ../Baseline/Astronomy/flash-animations/flashdev2/zodiacSimulator/Main.as (lines
  * 171–185 for month/day algorithm) and ZodiacSkyView.as (lines 658–686 for sun
  * from longitude, twilight).
  */

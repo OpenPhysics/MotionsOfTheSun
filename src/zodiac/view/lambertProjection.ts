@@ -25,7 +25,7 @@
  * Screen origin = (width/2, offset) within the clipped rectangle.
  * Returned (x, y) are relative to that origin (positive y is downward).
  *
- * Physics source: NAAP/flash-animations/flashdev2/zodiacSimulator/ZodiacSkyView.as
+ * Physics source: ../Baseline/Astronomy/flash-animations/flashdev2/zodiacSimulator/ZodiacSkyView.as
  *   lines 154–162, 214–231, 794–914 (updateConstants, projectCelestialToScreen,
  *   projectHorizonToScreen, getAltitudeFromCelestialCoord).
  */

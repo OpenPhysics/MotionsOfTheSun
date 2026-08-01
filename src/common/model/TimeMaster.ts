@@ -2,7 +2,7 @@
  * TimeMaster.ts
  *
  * Manages solar and sidereal time with optional cubic ease-in-out animation.
- * Transcribed from `NAAP/flash-animations/flashdev2/siderealSolarTime/TimeMaster.as`
+ * Transcribed from `../Baseline/Astronomy/flash-animations/flashdev2/siderealSolarTime/TimeMaster.as`
  * with design decision D4: animated jumps are implemented as cubic ease-in-out
  * inside `step(dt)` (no Flash Timer / CubicEaser dependency).
  *

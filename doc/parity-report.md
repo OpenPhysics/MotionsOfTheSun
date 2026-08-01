@@ -9,7 +9,7 @@ top, and the few genuine gaps.
 ## Reference sources
 | Screen | Lab SWF | Flash / AS reference | JS reference |
 |---|---|---|---|
-| Sun Paths | `sunmotions.swf` (= `sunMotions068`) | `NAAP/decompiled/sunMotions068-C` (close sibling) | `NAAP/astro-simulations/sun-motion-simulator` (React/WebGL) |
+| Sun Paths | `sunmotions.swf` (= `sunMotions068`) | `NAAP/decompiled/sunMotions068-C` (close sibling) | `../Baseline/Astronomy/astro-simulations/sun-motion-simulator` (React/WebGL) |
 | Sidereal & Solar Time | `siderealSolarTime.swf` | AS3 `flashdev2/siderealSolarTime` + decompile | *(none — Flash only)* |
 | Zodiac | `zodiac.swf` (ZodiacViewer / `zodiac016` family) | Decompiled `zodiac017` (+ `zodiac016` for axis); optional Lambert from `zodiacSimulator` | *(none — Flash only)* |
 
