@@ -1,5 +1,7 @@
 # Motions of the Sun
 
+[![CI](https://github.com/OpenPhysics/MotionsOfTheSun/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenPhysics/MotionsOfTheSun/actions/workflows/ci.yml)
+
 A three-screen [SceneryStack](https://scenerystack.org/) port of the NAAP **Motions of the Sun**
 lab: **Sun Paths**, **Sidereal and Solar Time**, and **Zodiac**.
 Built with Vite 8, TypeScript 7, and Biome 2.

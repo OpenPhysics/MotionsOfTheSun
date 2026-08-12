@@ -82,6 +82,8 @@ Fleet-standard Vitest layout:
 npm run lint && npm run check && npm run build && npm test
 ```
 
+`npm run release` intentionally skips `npm test` in some sims — append `&& npm test` before the version bump so a release cannot ship a failing suite.
+
 ## Development notes
 
 **Donor provenance (from `RotatingSky/`):** `SkyCoordinates.ts`, `SkyProjection.ts`, `skyMorph.ts`, `ViewDirection.ts`, `skyGraphics.ts`, `starGraphics.ts`, `skyViewLayout.ts`, `HorizonDomeNode.ts`, `HorizonGroundNode.ts`, `CelestialPoleAxisNode.ts`, `CelestialEquatorOnHorizonNode.ts`, `HourCircleOnHorizonNode.ts`, `attachSkyCameraInteraction.ts`, and control/hotkey option bundles — copied with `RotatingSky*` → `MotionsOfTheSun*` renames. **Not copied:** `Star.ts`, `SkyModel.ts`, `StarPatterns.ts`.
@@ -92,3 +94,18 @@ npm run lint && npm run check && npm run build && npm test
 
 - **`npm run decompile`** default targets: `sunMotions068-C`, `siderealSolarTime`, `zodiac017` (same family as lab `zodiac.swf` / `zodiac016`). Sources: `../Baseline/Astronomy/flash-animations`.
 - After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).
+
+## Compliance carve-outs
+
+### `package.json` overrides
+
+JSON cannot carry comments, so the rationale for forced transitive pins lives here. Prefer
+**tilde (`~`) or exact** versions — caret (`^`) lets minors drift under what is meant to be a
+hard pin. Dependabot ignores these three names (see `.github/dependabot.yml`) so it does not
+open PRs that fight the overrides. Revisit when SceneryStack drops or re-pins them upstream.
+
+| Override | Pin | Why |
+|---|---|---|
+| `lodash` | `~4.18.1` | SceneryStack declares `~4.17.12`. Bump clears Dependabot/npm advisories patched in 4.18.x (e.g. GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh). |
+| `three` | `~0.125.2` | SceneryStack declares `^0.104.0`. Floor is 0.125.0 for GHSA-fq6p-x6j3-cmmq (ReDoS). Staying on the 0.125 line avoids a larger API jump; **0.125.x still has open CVEs** (e.g. XSS GHSA-7vvq-7r29-5vg3, fixed only in ≥0.137.0). Remove this override if/when SceneryStack stops depending on `three` or pins a patched line itself. LightPropagation keeps a higher `three` pin — do not force 0.125 there. |
+| `brace-expansion` | `~5.0.9` | Transitive via `vite-plugin-pwa` / Workbox. Clears npm audit (originally GHSA-mh99-v99m-4gvg; keep ≥5.0.9 for GHSA-rgw5-rvv9-x895). |
