@@ -29,6 +29,7 @@ import {
   FLAT_RECTANGULAR_BUTTON_OPTIONS,
   FLAT_RECTANGULAR_RADIO_BUTTON_OPTIONS,
   FLAT_RESET_ALL_BUTTON_OPTIONS,
+  LIGHT_SURFACE_TEXT_FILL,
   TIME_CONTROL_SPEED_RADIO_OPTIONS,
 } from "../../common/MotionsOfTheSunButtonOptions.js";
 import {
@@ -170,7 +171,8 @@ export class ZodiacScreenView extends ScreenView {
     const makeTimeButton = (labelProperty: TReadOnlyProperty<string>, listener: () => void): RectangularPushButton =>
       new RectangularPushButton({
         ...FLAT_RECTANGULAR_BUTTON_OPTIONS,
-        content: new Text(labelProperty, { font, fill: textFill, maxWidth: 80 }),
+        baseColor: MotionsOfTheSunColors.controlSurfaceColorProperty,
+        content: new Text(labelProperty, { font, fill: LIGHT_SURFACE_TEXT_FILL, maxWidth: 80 }),
         listener,
         accessibleName: labelProperty,
       });
