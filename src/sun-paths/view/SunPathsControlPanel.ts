@@ -43,6 +43,7 @@ import {
   PANEL_TITLE_FONT_SIZE,
 } from "../../MotionsOfTheSunConstants.js";
 import type { SunPathsModel } from "../model/SunPathsModel.js";
+import { attachDayTimeMirrors } from "./attachDayTimeMirrors.js";
 import { CalendarStripNode } from "./CalendarStripNode.js";
 import { SunClockNode } from "./SunClockNode.js";
 
@@ -128,21 +129,6 @@ export class SunPathsControlPanel {
     // ── Day-of-year control (Flash 0-based integer DOY) ─────────────────────
     const dayProperty = new NumberProperty(Math.max(0, Math.floor(DEFAULT_DAY_OF_YEAR)), { range: DAY_RANGE });
 
-    // Bidirectional sync: integer part of dayOfYear ↔ dayProperty
-    model.dayOfYearProperty.link((day) => {
-      const newInt = Math.max(0, Math.min(364, Math.floor(day)));
-      if (dayProperty.value !== newInt) {
-        dayProperty.value = newInt;
-      }
-    });
-    dayProperty.lazyLink((day) => {
-      const frac = model.dayOfYearProperty.value % 1;
-      const newDay = day + frac;
-      if (Math.abs(model.dayOfYearProperty.value - newDay) > 1e-9) {
-        model.dayOfYearProperty.value = newDay;
-      }
-    });
-
     // Month-Day subtitle: reads string property values each time dayOfYear changes.
     const monthDayProperty = new DerivedProperty([model.dayOfYearProperty], (day) => {
       const doy0 = Math.max(0, Math.floor(day));
@@ -174,19 +160,7 @@ export class SunPathsControlPanel {
     // ── Time-of-day control ─────────────────────────────────────────────────
     const timeProperty = new NumberProperty((DEFAULT_DAY_OF_YEAR % 1) * 24, { range: TIME_RANGE });
 
-    model.dayOfYearProperty.link((day) => {
-      const newTime = Math.max(0, Math.min(24, (day % 1) * 24));
-      if (Math.abs(timeProperty.value - newTime) > 1e-6) {
-        timeProperty.value = newTime;
-      }
-    });
-    timeProperty.lazyLink((time) => {
-      const intDay = Math.floor(model.dayOfYearProperty.value);
-      const newDay = intDay + time / 24;
-      if (Math.abs(model.dayOfYearProperty.value - newDay) > 1e-9) {
-        model.dayOfYearProperty.value = newDay;
-      }
-    });
+    attachDayTimeMirrors(model.dayOfYearProperty, dayProperty, timeProperty);
 
     const timeControl = new NumberControl(controls.timeOfDayStringProperty, timeProperty, TIME_RANGE, {
       ...MOTIONS_OF_THE_SUN_NUMBER_CONTROL_OPTIONS,
